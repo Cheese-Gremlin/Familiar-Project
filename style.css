@@ -1,54 +1,47 @@
-/* ============================================================
-   YOUR CREATURE — style.css
-   MDDN242 Project 2
-   ============================================================ */
+/* ================================
+   style.css
+   ================================ */
 
-
-
-:root {
-    --dark:       #141413;
-    --azure:      azure;
-    --steel-blue:   lightsteelblue;
-    --powder-blue: powderblue;
-    --orange:     darkorange;
-    --blue:       #6a9bcc;
-    --green:      #788c5d;
+/* --- Reset & Base --- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
-
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, var(--azure) 0%, #f5f3ee 100%);
-    min-height: 100vh;
-    color: var(--dark);
+  background: #1a1a1a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow: hidden;
+
+  /* Indie Flower is now available everywhere via: font-family: 'Indie Flower', cursive; */
 }
 
-/* ── Layout ── */
-
-.container {
-    display: flex;
-    height: 100vh;
-    overflow: hidden;
-    padding: 20px;
-    gap: 20px;
+canvas {
+  display: block;
 }
 
-.canvas-area {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 0;
+/* --- Typography --- */
+/* Example usage — uncomment and adapt as needed:
+
+h1 {
+  font-family: 'Indie Flower', cursive;
+  color: #ffffff;
+  font-size: 2rem;
 }
 
-#canvas-container {
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 20px 50px rgba(20, 20, 19, 0.12);
+p {
+  font-family: 'Indie Flower', cursive;
+  color: #cccccc;
 }
 
-#canvas-container canvas {
-    display: block;
-}
+*/
+
+/* --- Layout --- */
+/* Add your layout styles here */
+
+/* --- Components --- */
+/* Add styles for buttons, panels, UI elements here */
