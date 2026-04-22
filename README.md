@@ -119,3 +119,21 @@ Starting to work:
     ![alt text](<Images-ReadMe/AI created- basic start files.png>) <- rough screen shot of the files claude provided me with
 
 
+Goober creation:
+    - I drew a little ghost to reppresent the goober ![alt text](Images/Goober-Template.png)
+    which i then loaded in as a template/reference to help me allign the points of the cruverVertexs to draw the goober 
+    - i have drawn everything based one gooberPosX and gooberPosY (currently assigned at the top of the sketch) so that later when i make the goober move, everything follows with it
+    - then added the 4 different faces/ reactions in has (these are currently not triggered by anything and only defined at the top of the sketch, they will later be triggered by certain states being triggered)
+
+Menu creation:
+    - i made buttons by drawing shapes and then in the 'mouseClicked' function check if the mouse was clicked in the area of the shape
+
+Feelings creation:
+    - I added all the feelings as variables in the top of the script so that they can easliy be changes to test things. 
+    - the feelings menu lays out all the feelings as different buttons, also showing the colour of the feeling
+    - using the same 'button logic' of the menu, when the user presses on a feeling button, the goober changes to the respective colour. 
+    ⤷ things to fix:
+    - currently whenever the mouse is clicked it turns all feelings false apart from the clicked on which is very chunky code and couldnt be simplified somehow.
+    - there currently is no way to store the feeling so the goober returns to 'default' colour when reloading the page as all 'progress/ information' is reset
+
+

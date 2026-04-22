@@ -44,7 +44,7 @@ let happy = false           // #effc77
 let calm = false            // #fff8e8
 
 function preload(){
-  GooberImg =loadImage("images/Goober-Template.png")
+  GooberImg =loadImage("Images/Goober-Template.png")
 }
 
 function isMobile() {
@@ -261,34 +261,52 @@ function drawGoober(x, y){
     }
 
 function mouseClicked () {
-// press on goober
+// press on goober and open main menu
   if (showFeelingsMenu === false && showMainMenu === false && mouseX > gooberPosX - gooberWidth/2 && mouseX < gooberPosX + gooberWidth/2 &&
       mouseY > gooberPosY - gooberHeight/2 && mouseY < gooberPosY + gooberHeight/2) {
     console.log('Clicked on goober');
     showMainMenu = true
   }
-//press 'log feelings'
+//press 'log feelings' and open feelings menu
   else if (showMainMenu === true && mouseX > gooberPosX+180 && mouseX < gooberPosX+340 && mouseY > gooberPosY-100 && mouseY < gooberPosY-60) {
     console.log('Clicked on log feelings');
     showMainMenu = false
     showFeelingsMenu = true
   }
-//calm
-  else if (showMainMenu === false && showFeelingsMenu === true && mouseX > gooberPosX+180 && mouseX < gooberPosX+305 && mouseY > gooberPosY-100 && mouseY < gooberPosY-80) {
+//press 'done' in feelings menu and close feelings menu
+  else if (showMainMenu === false && showFeelingsMenu === true && mouseX > gooberPosX+180 && mouseX < gooberPosX+407 && mouseY > gooberPosY+70 && mouseY < gooberPosY+120) {
     console.log('Clicked on log feelings');
     showMainMenu = false
-    showFeelingsMenu = true
-    calm = true
-    happy = false
+    showFeelingsMenu = false
   }
-//happy
-  else if (showMainMenu === false && showFeelingsMenu === true && mouseX > gooberPosX+180 && mouseX < gooberPosX+305 && mouseY > gooberPosY-72 && mouseY < gooberPosY-62) {
-    console.log('Clicked on log feelings');
-    showMainMenu = false
-    showFeelingsMenu = true
-    calm = false
-    happy = true
-  }
+//feelings
+    //calm
+    else if (showMainMenu === false && showFeelingsMenu === true && mouseX > gooberPosX+180 && mouseX < gooberPosX+305 && mouseY > gooberPosY-100 && mouseY < gooberPosY-80) {
+        console.log('Clicked on log feelings');
+        showMainMenu = false
+        showFeelingsMenu = true
+        calm = true
+        happy = false
+        excited = false
+    }
+    //happy
+    else if (showMainMenu === false && showFeelingsMenu === true && mouseX > gooberPosX+180 && mouseX < gooberPosX+305 && mouseY > gooberPosY-72 && mouseY < gooberPosY-52) {
+        console.log('Clicked on log feelings');
+        showMainMenu = false
+        showFeelingsMenu = true
+        calm = false
+        happy = true
+        excited = false
+    }
+    //Excited
+    else if (showMainMenu === false && showFeelingsMenu === true && mouseX > gooberPosX+180 && mouseX < gooberPosX+305 && mouseY > gooberPosY-44 && mouseY < gooberPosY-24) {
+        console.log('Clicked on log feelings');
+        showMainMenu = false
+        showFeelingsMenu = true
+        calm = false
+        happy = false
+        excited = true
+    }
 }
 
 function drawMainMenu(x, y) {
@@ -373,11 +391,23 @@ function drawFeelingsMenu(x, y) {
     fill(189, 49, 99);
     rect(x+180, y+40, 12, 12, 5); //distracted
     //right column
+    stroke(216, 60, 92);
+    fill(216, 60, 99);
     rect(x+312, y-100, 12, 12, 5); //sad
+    stroke(258, 53, 92);
+    fill(258, 53, 99);
     rect(x+312, y-72, 12, 12, 5); //bored
+    stroke(283, 53, 92);
+    fill(283, 53, 99);
     rect(x+312, y-44, 12, 12, 5); //Annoyed
+    stroke(0, 53, 92);
+    fill(0, 53, 99,);
     rect(x+312, y-16, 12, 12, 5); //Angry
+    stroke(39, 53, 92);
+    fill(39, 53, 99);
     rect(x+312, y+12, 12, 12, 5); //Tired
+    stroke(283, 2, 52);
+    fill(283, 0, 59);
     rect(x+312, y+40, 12, 12, 5); //Nothing
     pop ();
 
