@@ -106,10 +106,9 @@ Goobers States:
         ⤷ max hungry = 'riot state' actives
 
 
-
 Starting to work:
     I was initially very overwhelmed and didnt know where to start. I tried to strip the given files down to bare bones so that I could make my own creation but it was really hard to tell what was needed and what wasnt and i kept getting really frustrated and almost panicky because i didnt know what almost any of the code meant/ did which made me feel very discouraged.
-
+-
     My 'solution' (which im not a big fan of but couldnt think of another way) was to ask Claude for help (since we are supposed to be working with AI anyway). I asked it to help me make some basic starting files:
         Hi there!
         I want to do a coding project. can you help me set up some basic files so that i can work from them easily? 

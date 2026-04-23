@@ -273,12 +273,12 @@ function mouseClicked () {
     showMainMenu = false
     showFeelingsMenu = true
   }
-//press 'done' in feelings menu and close feelings menu
-  else if (showMainMenu === false && showFeelingsMenu === true && mouseX > gooberPosX+180 && mouseX < gooberPosX+407 && mouseY > gooberPosY+70 && mouseY < gooberPosY+120) {
-    console.log('Clicked on log feelings');
-    showMainMenu = false
-    showFeelingsMenu = false
-  }
+    //press 'done' in feelings menu and close feelings menu
+    else if (showMainMenu === false && showFeelingsMenu === true && mouseX > gooberPosX+180 && mouseX < gooberPosX+407 && mouseY > gooberPosY+70 && mouseY < gooberPosY+120) {
+        console.log('Clicked on log feelings');
+        showMainMenu = false
+        showFeelingsMenu = false
+    }
 //feelings
     //calm
     else if (showMainMenu === false && showFeelingsMenu === true && mouseX > gooberPosX+180 && mouseX < gooberPosX+305 && mouseY > gooberPosY-100 && mouseY < gooberPosY-80) {
@@ -288,6 +288,14 @@ function mouseClicked () {
         calm = true
         happy = false
         excited = false
+        panicked = false  
+        overwhelmed = false  
+        distracted = false 
+        sad = false 
+        bored = false  
+        annoyed = false   
+        angry = false 
+        tired = false 
     }
     //happy
     else if (showMainMenu === false && showFeelingsMenu === true && mouseX > gooberPosX+180 && mouseX < gooberPosX+305 && mouseY > gooberPosY-72 && mouseY < gooberPosY-52) {
@@ -297,6 +305,14 @@ function mouseClicked () {
         calm = false
         happy = true
         excited = false
+        panicked = false  
+        overwhelmed = false  
+        distracted = false 
+        sad = false 
+        bored = false  
+        annoyed = false   
+        angry = false 
+        tired = false 
     }
     //Excited
     else if (showMainMenu === false && showFeelingsMenu === true && mouseX > gooberPosX+180 && mouseX < gooberPosX+305 && mouseY > gooberPosY-44 && mouseY < gooberPosY-24) {
@@ -306,6 +322,65 @@ function mouseClicked () {
         calm = false
         happy = false
         excited = true
+        panicked = false  
+        overwhelmed = false  
+        distracted = false 
+        sad = false 
+        bored = false  
+        annoyed = false   
+        angry = false 
+        tired = false 
+    }
+    //Panicked
+    else if (showMainMenu === false && showFeelingsMenu === true && mouseX > gooberPosX+180 && mouseX < gooberPosX+305 && mouseY > gooberPosY-16 && mouseY < gooberPosY+4) {
+        console.log('Clicked on log feelings');
+        showMainMenu = false
+        showFeelingsMenu = true
+        calm = false
+        happy = false
+        excited = false
+        panicked = true  
+        overwhelmed = false  
+        distracted = false 
+        sad = false 
+        bored = false  
+        annoyed = false   
+        angry = false 
+        tired = false 
+    }
+    //overwhelmed
+    else if (showMainMenu === false && showFeelingsMenu === true && mouseX > gooberPosX+180 && mouseX < gooberPosX+305 && mouseY > gooberPosY+12 && mouseY < gooberPosY+32) {
+        console.log('Clicked on log feelings');
+        showMainMenu = false
+        showFeelingsMenu = true
+        calm = false
+        happy = false
+        excited = false
+        panicked = false  
+        overwhelmed = true  
+        distracted = false 
+        sad = false 
+        bored = false  
+        annoyed = false   
+        angry = false 
+        tired = false 
+    }
+    //distracted
+    else if (showMainMenu === false && showFeelingsMenu === true && mouseX > gooberPosX+180 && mouseX < gooberPosX+305 && mouseY > gooberPosY+40 && mouseY < gooberPosY+60) {
+        console.log('Clicked on log feelings');
+        showMainMenu = false
+        showFeelingsMenu = true
+        calm = false
+        happy = false
+        excited = false
+        panicked = false  
+        overwhelmed = false  
+        distracted = true 
+        sad = false 
+        bored = false  
+        annoyed = false   
+        angry = false 
+        tired = false 
     }
 }
 
