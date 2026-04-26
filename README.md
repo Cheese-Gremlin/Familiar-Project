@@ -27,6 +27,8 @@ Notes: <br/>
     When asking AI this: <br/>
         AI makes mistakes in coding because it operates on probabilistic pattern matching rather than true logical understanding, often prioritizing statistical likelihood over functional correctness. It predicts the next likely code snippet based on training data, leading to hallucinations, outdated library usage, lack of production-level robustness, and poor handling of complex, multi-step logic. <br/>
     so basically its kind of a terrible thing to use for coding and things that are logic based.... i simply dont understand <br/>
+26/04 <br/>
+    -why does claude suggest things for me to do and then it turns out that the function doesnt even exist in p5js?????? its driving me crazy constantly fact checking everything and having to problem solve. i thought the AI was supposed to be smart.... At this rate it would be easier to do it myself...
 
 
 idea 1: <br/>
@@ -81,17 +83,19 @@ Hunger Meter: <br/>
     - meter gets reset when user 'shares food' (by pressing on the goober and telling them what food they had), goober says thanks for sharing food and has happy expression.  <br/>
 
 List of feelings: (these could be customizable by user) <br/>
-    - tired (orange) #fccd77 <br/>
-    - angry (red) #fc7777 <br/>
-    - annoyed (magenta) #d677fc <br/>
-    - bored (deep purple) #9f77fc <br/>
-    - sad (blue) #66a2fd <br/>
-    - distracted (light blue) #80eafd <br/>
-    - overwhelmed (cyan) #4ec9a4 <br/>
-    - panic/scared (dark green) #87c951 <br/>
-    - excited (lime) #a5eb64 <br/>
-    - happy (yellow) #effc77 <br/>
-    - neutral/calm (white/cream) #fff5de <br/>
+    
+    - neutral/calm (white/cream)  #fff5de 
+    - happy (yellow)              #effc77 
+    - excited (lime)              #a5eb64 
+    - panic/scared (dark green)   #87c951 
+    - overwhelmed (cyan)          #4ec9a4 
+    - distracted (light blue)     #80eafd 
+    - sad (blue)                  #66a2fd 
+    - bored (deep purple)         #9f77fc 
+    - annoyed (magenta)           #d677fc 
+    - angry (red)                 #fc7777 
+    - tired (orange)              #fccd77 
+    - nothing (grey)              #969696 
 
 
 Goobers States: <br/>
@@ -138,6 +142,7 @@ Goober creation: <br/>
 
 Menu creation: <br/>
     - i made buttons by drawing shapes and then in the 'mouseClicked' function check if the mouse was clicked in the area of the shape <br/>
+    ![alt text](<Images-ReadMe/Main Menu.png>) 
 
 Feelings creation: <br/>
     - I added all the feelings as variables in the top of the script so that they can easliy be changes to test things.  <br/>
@@ -178,8 +183,18 @@ picking the suggestion:<br/>
     -update: it bloody sucks and im so fed up with stupid AI <br/>
     ![alt text](<Images-ReadMe/AI created - limited suggestion pt3.png>)<br/>
     it keeps 'making changes' then i ask why and then it realizes that its change is actually wrong and goes back to the way i suggested to do it. i hate it here so much right now...<br/>
-    update: i figured it out. to be honest not sure what i did (just re-arranged things within the mouseCLicked) but it works :D once the user has cycled through all 5 available suggestion, the 'im out of suggestions' screen shows up. when the user pressed 'can i hear them again' it restarts with no issues.
+    update: i figured it out. to be honest not sure what i did (just re-arranged things within the mouseCLicked) but it works :D once the user has cycled through all 5 available suggestion, the 'im out of suggestions' screen shows up. when the user pressed 'can i hear them again' it restarts with no issues. <br/>
 
 making all menus close when user presses outside goober<br/>
     - i used the same logic as for the buttons so that when the user clicks outside of the goober and menu area, all show-menus get turned false. I did this by defining the area that would be 'mouseOnGoober' and 'flipping' it using (!(mouseX > gooberPosX-115 && etc etc etc)) <br/>
 
+-------------------------------------------------------------------------
+sharing food: <br/>
+    - i want the user to be able to share a description of what they ate, maybe even a picture, to which the goober responds with something like 'ooo thats yummy! i hope you enjoyed it and that it gave you lots of fuel'. This will directly relate to the 'hunger meter'. <br/>
+    -plan: I will start by making a button in the main menu, a base layout for the 'sharing food' menu, and a 'food response' menu. Since i dont know how to add a section where the user can type in text or insert images I will ask AI for help so little Claud bot has something to do. <br/>
+    Working with the AI took some back and forth again as it didnt seem to fully understand what i was asking for. here is the output: <br/>
+    ![alt text](<Images-ReadMe/AI created - input box.png>) <br/>
+
+Hunger Meter:
+    -i asked claude for help with the code of how to make a value increase over time etc <br/>
+    ![alt text](<Images-ReadMe/AI created - increasing value.png>)

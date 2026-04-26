@@ -19,9 +19,15 @@ let showRestartSuggestionMenu = false;
     let restartSuggestionStartTime = Infinity;
 let showThinking = false;
     let thinkingStartTime = Infinity;
+let showShareFoodMenu = false;
+let showAcceptedFoodMenu = false;
+    let foodStartTime = Infinity;
+
+// food stuff
+let foodInput;
+let foodInputHasText = false;
 
 // set suggestions
-//let suggestion = ('Writing about why your feeling this way') 
 let availableSuggestions = [];
 let allSuggestionsUsed = false;
 let suggestionsFilledOnce = false;
@@ -111,8 +117,25 @@ let nothingSuggestions = [
   'Taking the day off to do what brings you joy'
 ];
 
+//hunger meter
+let startHungerMeter = true
+let hunger = (0);
+let hungerPosX = (10);
+let hungerPosY = (20);
+let hungerLimit = (100);
+let hungerAmount = (0.1); //by how much the meter increases
+let hungerInterval = (7200); //how often the meter increases 7200
+let hungerFillColour = [107, 65, 85] // #6ad94c
+let hungerOutlineColour = [0, 0, 27] // #454545
+let hungerOutlineWidth = (5)
+
+let hungerStartTime = null;
+let hungerTimerRunning = false;
+const HUNGER_LIMIT = 100;
+const HUNGER_DURATION = 7200000; // 2 hours in ms
 
 
+//goober stuff
 
 let gooberOutlineColour = [0, 0, 100];
 let gooberFillColour = [0, 0, 100, 200];
@@ -122,7 +145,7 @@ let faceColour = [0, 0, 19];
 let gooberWidth = (220);
 let gooberHeight = (265);
 let gooberPosX = (150);
-let gooberPosY = (200);
+let gooberPosY = (250);
 
 // goober expressions
 let contemptFace = true;
@@ -167,6 +190,7 @@ function canvasSize() {
 
 function setup() {
 // load saved value
+    //feelings
     calm = localStorage.getItem('calm') === 'true';
     happy = localStorage.getItem('happy') === 'true';
     excited = localStorage.getItem('excited') === 'true';
@@ -179,41 +203,68 @@ function setup() {
     angry = localStorage.getItem('angry') === 'true';
     tired = localStorage.getItem('tired') === 'true';
     currentFeeling = localStorage.getItem('currentFeeling') || 'neutral';
+    //hunger meter
+    hungerStartTime = localStorage.getItem('hungerStartTime');
+    hungerTimerRunning = localStorage.getItem('hungerTimerRunning') === 'true';
 
+// canvas stuff
     const { w, h } = canvasSize();
     createCanvas(w, h);
     strokeCap(ROUND);
     strokeJoin(ROUND);
     colorMode (HSB); //same as HSV
     textFont('Indie Flower');
-    }
-function saveState() {
-//save feelings values
-    localStorage.setItem('calm', calm);
-    localStorage.setItem('happy', happy);
-    localStorage.setItem('excited', excited);
-    localStorage.setItem('panicked', panicked);
-    localStorage.setItem('overwhelmed', overwhelmed);
-    localStorage.setItem('distracted', distracted);
-    localStorage.setItem('sad', sad);
-    localStorage.setItem('bored', bored);
-    localStorage.setItem('annoyed', annoyed);
-    localStorage.setItem('angry', angry);
-    localStorage.setItem('tired', tired);
 
-    localStorage.setItem('currentFeeling', currentFeeling);
+// food input stuff
+    foodInput = createElement('textarea');
+    foodInput.size(215, 140);
+    foodInput.style('font-family', 'Indie Flower');
+    foodInput.style('font-size', '20px');
+    foodInput.style('font-weight', '400'); // normal weight
+    foodInput.style('-webkit-text-stroke', '0.75px ' + textColour); // mimics strokeWeight
+    foodInput.style('background', 'transparent');
+    foodInput.style('border', 'none');
+    foodInput.style('resize', 'none');
+    foodInput.style('outline', 'none');
+    foodInput.attribute('placeholder', 'Type here...');
+    //foodInput.position(gooberPosX + 190, gooberPosY-80); // adjust to sit on your rect
+
+    
+    //hungerMeter (hungerLimit, hungerAmount, hungerInterval);
+    
+    console.log('hungerStartTime:', hungerStartTime);
+console.log('hungerTimerRunning:', hungerTimerRunning);
+console.log('hunger:', hunger);
+
 }
+
+function saveState() {
+    //save feelings values
+        localStorage.setItem('calm', calm);
+        localStorage.setItem('happy', happy);
+        localStorage.setItem('excited', excited);
+        localStorage.setItem('panicked', panicked);
+        localStorage.setItem('overwhelmed', overwhelmed);
+        localStorage.setItem('distracted', distracted);
+        localStorage.setItem('sad', sad);
+        localStorage.setItem('bored', bored);
+        localStorage.setItem('annoyed', annoyed);
+        localStorage.setItem('angry', angry);
+        localStorage.setItem('tired', tired);
+
+        localStorage.setItem('currentFeeling', currentFeeling);
+        localStorage.setItem('hunger', hunger);
+    
+}
+
 function draw() {
     background (245, 35, 67);
     
-    //area where mousOnGoober is true
-    // rect(gooberPosX-115, gooberPosY-160, gooberPosX+390, gooberPosY+110);
-    // push ();
-    // stroke (0, 79, 62)
-    // point (gooberPosX+425, gooberPosY+150);
-    // pop ();
-
     drawGoober(gooberPosX, gooberPosY);
+
+    hunger = getHungerTimerValue();
+    drawHungerMeter(hungerPosX, hungerPosY)
+
 
     if (showMainMenu === true){
         drawMainMenu(gooberPosX, gooberPosY);
@@ -247,7 +298,15 @@ function draw() {
             showSuggestionMenu = true
         }
     }
-
+    else if (showShareFoodMenu === true){
+        drawShareFoodMenu(gooberPosX, gooberPosY);
+    }
+    else if (showAcceptedFoodMenu === true){
+        drawAcceptedFoodMenu(gooberPosX, gooberPosY);
+        if (millis() - foodStartTime > 5000){
+            showAcceptedFoodMenu = false
+        }
+    }
 }
 
 function drawGoober(x, y){
@@ -431,7 +490,7 @@ function drawGoober(x, y){
 
 function mouseClicked () {
 // close menu if pressed outside goober (except when thinking or restarting suggestions to not break anything)
-    if (showThinking === false && showRestartSuggestionMenu === false && !(mouseX > gooberPosX-115 && mouseX < gooberPosX+425 && mouseY > gooberPosY-160 && mouseY < gooberPosY+150)){
+    if (showThinking === false && showRestartSuggestionMenu === false && showAcceptedFoodMenu === false && !(mouseX > gooberPosX-115 && mouseX < gooberPosX+425 && mouseY > gooberPosY-160 && mouseY < gooberPosY+150)){
         showMainMenu = false
         showFeelingsMenu = false;
         showSuggestionMenu = false;
@@ -794,6 +853,30 @@ function mouseClicked () {
         availableSuggestions = [];
     }
     
+
+// share food button
+    else if (showMainMenu === true && showShareFoodMenu === false && mouseX > gooberPosX+180 && mouseX < gooberPosX+342 && mouseY > gooberPosY-50 && mouseY < gooberPosY-10) {
+        showMainMenu = false
+        showShareFoodMenu = true
+        foodInput.show();
+    }
+// done button in food menu
+    else if (showMainMenu === false && showShareFoodMenu === true && showAcceptedFoodMenu === false && mouseX > gooberPosX+180 && mouseX < gooberPosX+342 && mouseY > gooberPosY+70 && mouseY < gooberPosY+100) {
+        showMainMenu = false
+        showShareFoodMenu = false
+        showAcceptedFoodMenu = true
+        foodStartTime = millis();
+        foodInput.value('');
+        foodInput.hide();
+    }
+
+// done button in food menu
+    else if (mouseX > hungerPosX && mouseX < hungerPosX+100 && mouseY > hungerPosY && mouseY < hungerPosY+100) {
+        startHungerTimer()
+        console.log ('hunger ' + hunger)
+    }
+
+
     saveState();
 }
 
@@ -809,9 +892,9 @@ function drawMainMenu(x, y) {
     //menu bubbles
     rect(x+180, y-160, 230, 50, 20); //hello!
     rect(x+180, y-100, 165, 40, 20); //feeling
-    rect(x+180, y-50, 242, 40, 20); //tasks
-    rect(x+180, y, 167, 40, 20); //food
-    rect(x+180, y+50, 152, 40, 20); //help
+    rect(x+180, y-50, 167, 40, 20); //food
+    rect(x+180, y, 152, 40, 20); //help 
+    rect(x+180, y+50, 242, 40, 20); //tasks 
     rect(x+180, y+100, 262, 40, 20); //proud
 
     //text
@@ -821,10 +904,11 @@ function drawMainMenu(x, y) {
     textSize (20);
     text ('Hello! What do you need?', x+195, y-127);
     text ('-Log a feeling •‿•', x+195, y-75);
-    text ('-Share what you enjoy ☆', x+195, y-23);
-    text ('-Share food 𓌉◯𓇋', x+195, y+27);
-    text ('-Ask for Help ♡', x+195, y+77);
+    text ('-Share food 𓌉◯𓇋', x+195, y-23);
+    text ('-Ask for Help ♡', x+195, y+27);
+    text ('-Share what you enjoy ☆', x+195, y+77);
     text ('-Say Your Proud of Yourself', x+195, y+125);
+    
 }
 function drawFeelingsMenu(x, y) {
     fill(menuFillColour);
@@ -1061,6 +1145,48 @@ function drawRestartSuggestionMenu (x, y){
     text ('Of course!', x+195, y-135);;
 }
 
+function drawShareFoodMenu (x,y){
+    fill(menuFillColour);
+    stroke(menuOutlineColour);
+    strokeWeight(menuOutlineWidth);
+
+    //thinking bubbles
+    ellipse (x+110, y-110, 30, 30);
+    ellipse (x+137, y-130, 20, 20);
+    ellipse (x+160, y-140, 15, 15);
+    //menu bubbles
+    rect(x+180, y-160, 227, 60, 20); //yipee
+    rect(x+180, y-90, 227, 150, 20); //input box
+    rect(x+180, y+70, 227, 30, 20); //ok
+
+    //text
+    fill(textColour);
+    stroke(textColour);
+    strokeWeight (0.75);
+    textSize (20);
+    text ('You have some food to share with me?  Yipee!', x+195, y-148, 220);
+    text ('-and thats what I ate-', x+202, y+92);
+    foodInput.position(gooberPosX + 190, gooberPosY-80); // adjust to sit on your rect
+}
+function drawAcceptedFoodMenu (x,y){
+    fill(menuFillColour);
+    stroke(menuOutlineColour);
+    strokeWeight(menuOutlineWidth);
+
+    //thinking bubbles
+    ellipse (x+110, y-110, 30, 30);
+    ellipse (x+137, y-130, 20, 20);
+    ellipse (x+160, y-140, 15, 15);
+    //menu bubbles
+    rect(x+180, y-160, 227, 110, 20); //thank you
+
+    //text
+    fill(textColour);
+    stroke(textColour);
+    strokeWeight (0.75);
+    textSize (20);
+    text ('ooo thats yummy!         i hope you enjoyed it and that it gave you lots of fuel', x+192, y-148, 220);
+}
 
 function pickSuggestion(){
     // console.log('available suggestions:', availableSuggestions.length);
@@ -1156,6 +1282,71 @@ function pickSuggestion(){
     console.log('picked:', suggestion); // ← add here
     console.log('remaining:', availableSuggestions); // ← and here
 }
+
+
+function drawHungerMeter (x, y){ //x&y are hungerPos
+
+    //fill
+    push ();
+    fill(hungerFillColour);
+    noStroke();
+    rect(x, y+20, hunger*2, 20); //thank you
+    pop ();
+    //outline
+    push ();
+    noFill();
+    stroke(hungerOutlineColour);
+    strokeWeight(hungerOutlineWidth);
+    rect(x, y+20, 200, 20); //thank you
+    pop ();
+
+    fill(textColour);
+    stroke(textColour);
+    strokeWeight (0.75);
+    textSize (20);
+    text ('hunger: ' + hunger, x, y);
+}
+// function hungerMeter (limit, amount, interval){
+// //code by AI
+//     let timer = setInterval(() => {
+//         if (hunger >= limit) {
+//             clearInterval(timer); // stops when limit is hit
+//         } 
+//         else {
+//             hunger += amount;
+//             hunger = min(hunger, limit); // makes sure it doesn't go over the limit
+//             saveState();
+//         }
+//         }, interval);
+// }
+
+function startHungerTimer() {
+  hungerStartTime = Date.now();
+  hungerTimerRunning = true;
+  localStorage.setItem('hungerStartTime', hungerStartTime);
+  localStorage.setItem('hungerTimerRunning', true);
+}
+
+function stopHungerTimer() {
+  hungerTimerRunning = false;
+  localStorage.setItem('hungerTimerRunning', false);
+}
+
+function resetHungerTimer() {
+  hungerStartTime = null;
+  hungerTimerRunning = false;
+  localStorage.setItem('hungerStartTime', null);
+  localStorage.setItem('hungerTimerRunning', false);
+}
+
+function getHungerTimerValue() {
+  if (!hungerTimerRunning || hungerStartTime === null) return 0;
+  let elapsed = Date.now() - hungerStartTime;
+  let value = min(HUNGER_LIMIT, (elapsed / HUNGER_DURATION) * HUNGER_LIMIT);
+  return parseFloat(value.toFixed(1)); // ← round before returning
+}
+
+
 
 // Resize the canvas if the window is resized
 function windowResized() {
