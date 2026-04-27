@@ -197,4 +197,24 @@ sharing food: <br/>
 
 Hunger Meter:
     -i asked claude for help with the code of how to make a value increase over time etc <br/>
-    ![alt text](<Images-ReadMe/AI created - increasing value.png>)
+    ![alt text](<Images-ReadMe/AI created - increasing value pt 1.png>) <br/>
+    this did quite work since i needed to be able to start and stop the meter and for the value to be stored so that it would carry over when reloading the page <br/>
+    i asked claude for more help to make this possible and it took about 4 hours with constant back and forth again of things not working since AI somehow messed up or didnt take things into consideration.... <br/>
+    here is the 'final' thing that claude came up with after a lot of trouble shooting: <br/>
+    ![alt text](<Images-ReadMe/AI created - increasing value pt 2.png>)<br/>
+    -asking AI to help with triggering it at a certain time of day: <br/>
+    ![alt text](<Images-ReadMe/AI created - time of day.png>)
+    ... just realized that this actually doesnt work when the page isnt open which isnt ideal... i would instead need to make something that checks how long it has been since e.g. breakfast time/ 8 am and then base the hunger meter off that. im hoping that i can use some of the code i already have.. <br/>
+    lets aks claude: (took about an hour to trouble shoot) <br/>
+    ![alt text](<Images-ReadMe/AI created - hunger timer.png>)
+
+making goober move: <br/>
+    -code done by myself :D <br/>
+    -started by making moveGoober function that gets triggered when 'isMoving' is set to true so that i can easily stop goober from moving. <br/>
+    -inside moveGoober i used gooberPos and 2 new variables rightEdge and leftEdge to move the goober until it hits one of the edges (left/right edge ads a margin so that the goober never actually touches the edge of the window). left/right edge are also updated in windowResized to make sure it stay accurate. <br/>
+    -if i have more time i want to add slight up and down movement as well to make goober seem more floaty but this works for now <br/>
+
+different states: 
+    -i used if statements to check the value of hunger to trigger different states and alerts <br/>
+    ![alt text](<Images-ReadMe/AI created - hunger timer.png>)
+    -alerts before goober is 100% hungry get triggered after a certain amount of time and stay visible for a certain amount of time. this is all done using timers and checking how much time has passed since they where started. <br/>

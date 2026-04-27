@@ -3,6 +3,9 @@
 // Set to true if you want to reserve space for a side UI panel (360px wide)
 const SHOW_UI = false;
 
+let rightEdge;
+let leftEdge;
+
 let textColour = [354, 0, 17];
 
 let menuOutlineColour = [42, 5, 92];
@@ -118,8 +121,9 @@ let nothingSuggestions = [
 ];
 
 //hunger meter
-let startHungerMeter = true
 let hunger = (0);
+let hungerTimeCheck = 0;
+let hungerReset = false;
 let hungerPosX = (10);
 let hungerPosY = (20);
 let hungerLimit = (100);
@@ -128,15 +132,17 @@ let hungerInterval = (7200); //how often the meter increases 7200
 let hungerFillColour = [107, 65, 85] // #6ad94c
 let hungerOutlineColour = [0, 0, 27] // #454545
 let hungerOutlineWidth = (5)
+let showHungerAlert = false;
+let hungerAlert = ('Hmmmm Im starting to get hungry')
+let hungerTextSize = (23);
+    let showHungerAlertTimer = 0;
+    let closeHungerAlertTimer = Infinity;
 
-let hungerStartTime = null;
-let hungerTimerRunning = false;
-const HUNGER_LIMIT = 100;
-const HUNGER_DURATION = 7200000; // 2 hours in ms
-
+let breakfastStart = 8;
+let lunchStart = 13;
+let dinnerStart = 18;
 
 //goober stuff
-
 let gooberOutlineColour = [0, 0, 100];
 let gooberFillColour = [0, 0, 100, 200];
 let outlineWidth = (5);
@@ -146,6 +152,12 @@ let gooberWidth = (220);
 let gooberHeight = (265);
 let gooberPosX = (150);
 let gooberPosY = (250);
+
+// moving goober
+let isMoving = true
+let gooberSpeed = (1);
+let moveRight = true;
+let moveLeft = false;
 
 // goober expressions
 let contemptFace = true;
@@ -204,8 +216,8 @@ function setup() {
     tired = localStorage.getItem('tired') === 'true';
     currentFeeling = localStorage.getItem('currentFeeling') || 'neutral';
     //hunger meter
-    hungerStartTime = localStorage.getItem('hungerStartTime');
-    hungerTimerRunning = localStorage.getItem('hungerTimerRunning') === 'true';
+    hungerReset = localStorage.getItem('hungerReset') === 'true';
+    hunger = parseFloat(localStorage.getItem('hunger')) || 0;
 
 // canvas stuff
     const { w, h } = canvasSize();
@@ -214,6 +226,9 @@ function setup() {
     strokeJoin(ROUND);
     colorMode (HSB); //same as HSV
     textFont('Indie Flower');
+    rightEdge = (width - 150)
+    leftEdge = (150)
+    checkTime()
 
 // food input stuff
     foodInput = createElement('textarea');
@@ -226,16 +241,10 @@ function setup() {
     foodInput.style('border', 'none');
     foodInput.style('resize', 'none');
     foodInput.style('outline', 'none');
+    foodInput.attribute('id', 'foodInput');
     foodInput.attribute('placeholder', 'Type here...');
-    //foodInput.position(gooberPosX + 190, gooberPosY-80); // adjust to sit on your rect
-
-    
-    //hungerMeter (hungerLimit, hungerAmount, hungerInterval);
-    
-    console.log('hungerStartTime:', hungerStartTime);
-console.log('hungerTimerRunning:', hungerTimerRunning);
-console.log('hunger:', hunger);
-
+    foodInput.position(0, 0);
+    foodInput.hide();
 }
 
 function saveState() {
@@ -253,59 +262,82 @@ function saveState() {
         localStorage.setItem('tired', tired);
 
         localStorage.setItem('currentFeeling', currentFeeling);
+
         localStorage.setItem('hunger', hunger);
-    
+        localStorage.setItem('hungerReset', hungerReset);
 }
 
 function draw() {
     background (245, 35, 67);
-    
+    drawGooberState (gooberPosX, gooberPosY);
+
     drawGoober(gooberPosX, gooberPosY);
-
-    hunger = getHungerTimerValue();
-    drawHungerMeter(hungerPosX, hungerPosY)
-
+    drawHungerMeter(hungerPosX, hungerPosY);
+    setHungerAlert (hungerPosX, hungerPosY);
+    
 
     if (showMainMenu === true){
         drawMainMenu(gooberPosX, gooberPosY);
     }
-    else if (showFeelingsMenu === true){
+    if (showFeelingsMenu === true){
         drawFeelingsMenu(gooberPosX, gooberPosY);
     }
-    else if (showSuggestionMenu === true){
+    if (showSuggestionMenu === true){
         drawSuggestionMenu(gooberPosX, gooberPosY);
     }
-    else if (showAcceptedSuggestionMenu === true){
+    if (showAcceptedSuggestionMenu === true){
         drawAcceptedSuggestionMenu(gooberPosX, gooberPosY);
     }
-    else if (showDeclinedSuggestionMenu === true){
+    if (showDeclinedSuggestionMenu === true){
         drawDeclinedSuggestionMenu(gooberPosX, gooberPosY);
     }
-    else if (showThinking === true){
+    if (showThinking === true){
         drawThinking(gooberPosX, gooberPosY);
         if (millis() - thinkingStartTime > 1500){
             showThinking = false
             showDeclinedSuggestionMenu = true
         }
     }
-    else if (showOutOfSuggestionMenu === true){
+    if (showOutOfSuggestionMenu === true){
         drawOutOfSuggestionMenu(gooberPosX, gooberPosY);
     }
-    else if (showRestartSuggestionMenu === true){
+    if (showRestartSuggestionMenu === true){
         drawRestartSuggestionMenu(gooberPosX, gooberPosY);
         if (millis() - restartSuggestionStartTime > 1500){
             showRestartSuggestionMenu = false
             showSuggestionMenu = true
         }
     }
-    else if (showShareFoodMenu === true){
+    if (showShareFoodMenu === true){
         drawShareFoodMenu(gooberPosX, gooberPosY);
     }
-    else if (showAcceptedFoodMenu === true){
+    if (showAcceptedFoodMenu === true){
         drawAcceptedFoodMenu(gooberPosX, gooberPosY);
         if (millis() - foodStartTime > 5000){
             showAcceptedFoodMenu = false
+            isMoving = true;
         }
+    }
+    if (showHungerAlert === true && 
+        showMainMenu === false &&
+        showFeelingsMenu === false &&
+        showSuggestionMenu === false &&
+        showAcceptedSuggestionMenu === false &&
+        showDeclinedSuggestionMenu === false &&
+        showThinking === false &&
+        showOutOfSuggestionMenu === false &&
+        showRestartSuggestionMenu === false &&
+        showShareFoodMenu === false &&
+        showAcceptedFoodMenu === false
+            ){
+        drawHungerAlert(gooberPosX, gooberPosY);
+    }
+    if (millis() - hungerTimeCheck > 30000) {
+        checkTime();
+        hungerTimeCheck = millis();
+    }
+    if (isMoving === true){
+        moveGoober(gooberPosX, gooberPosY);
     }
 }
 
@@ -335,13 +367,13 @@ function drawGoober(x, y){
     if (contemptFace === true) {
         drawContemptFace (x, y-55);
     }
-    if (happyFace === true) {
+    else if (happyFace === true) {
         drawHappyFace (x, y-55);
     }
-    if (sadFace === true) {
+    else if (sadFace === true) {
         drawSadFace (x, y-55);
     }
-    if (angryFace === true) {
+    else if (angryFace === true) {
         drawAngryFace (x, y-55);
     }
 }
@@ -365,7 +397,6 @@ function drawGoober(x, y){
     if (tired === true){ // #fccd77
         gooberOutlineColour = [39, 53, 92, lineOpacity];
         gooberFillColour = [39, 53, 99, bodyOpacity];
-        console.log('Hello!');
     }
     else if (angry === true){ // #fc7777
         gooberOutlineColour = [0, 53, 92, lineOpacity];
@@ -488,6 +519,81 @@ function drawGoober(x, y){
         endShape();
     }
 
+function drawGooberState (x, y){
+//expression
+    if (hunger === 100){
+        drawRiotState (gooberPosX, gooberPosY);
+    }
+    if (hunger === 75){
+        gooberSpeed = (3);
+    }
+
+}
+    function drawRiotState (x, y){
+        contemptFace = false;
+        happyFace = false;
+        sadFace = false;
+        angryFace = true;
+        gooberSpeed = (4);
+    }
+
+function setHungerAlert (x,y) {
+    //every 20min
+    if (hunger === 25 && showHungerAlert === false && millis() - showHungerAlertTimer > 1200000) {
+        showHungerAlert = true;
+        closeHungerAlertTimer = millis();
+        hungerAlert = ('Hmmmm Im starting to get hungry')
+        hungerTextSize = (23);
+    }
+    //every 15 min
+    if (hunger === 50 && showHungerAlert === false && millis() - showHungerAlertTimer > 900000) {
+        showHungerAlert = true;
+        closeHungerAlertTimer = millis();
+        hungerAlert = ('Do you have any food to share?')
+        hungerTextSize = (23);
+    }
+    //every 10 min
+    if (hunger === 75 && showHungerAlert === false && millis() - showHungerAlertTimer > 600000) {
+        showHungerAlert = true;
+        closeHungerAlertTimer = millis();
+        hungerAlert = ('Yeah.. Im getting very hungry now..')
+        hungerTextSize = (23);
+    }
+    //always
+    if (hunger === 100 && showHungerAlert === false) {
+        showHungerAlert = true;
+        //closeHungerAlertTimer = millis();
+        hungerAlert = ('IM HUNRGY!')
+        hungerTextSize = (41);
+    }
+
+    //hides hunger alert after 
+    if (showHungerAlert === true && millis() - closeHungerAlertTimer > 5000) {
+        showHungerAlert = false;
+        showHungerAlertTimer = millis();
+    }
+}
+
+function moveGoober (x, y){
+    if (gooberPosX >= leftEdge && gooberPosX < rightEdge && moveRight === true && moveLeft === false){
+        gooberPosX = (gooberPosX + gooberSpeed);
+    }
+    else if (gooberPosX >= rightEdge && moveRight === true){
+        gooberPosX = (rightEdge);
+        moveRight = false
+        moveLeft = true
+    }
+    else if (gooberPosX <= rightEdge && gooberPosX > leftEdge && moveLeft === true && moveRight === false){
+        gooberPosX = (gooberPosX - gooberSpeed);
+    }
+    else if (gooberPosX <= leftEdge && moveLeft === true){
+        gooberPosX = (leftEdge);
+        moveRight = true
+        moveLeft = false
+     }
+
+}
+
 function mouseClicked () {
 // close menu if pressed outside goober (except when thinking or restarting suggestions to not break anything)
     if (showThinking === false && showRestartSuggestionMenu === false && showAcceptedFoodMenu === false && !(mouseX > gooberPosX-115 && mouseX < gooberPosX+425 && mouseY > gooberPosY-160 && mouseY < gooberPosY+150)){
@@ -499,6 +605,8 @@ function mouseClicked () {
         showOutOfSuggestionMenu = false;
         showRestartSuggestionMenu = false;
         showThinking = false;
+        foodInput.hide();
+        isMoving = true;
     }
 // press on goober and open main menu
     if (showMainMenu === false && showThinking === false && showRestartSuggestionMenu === false &&
@@ -511,6 +619,9 @@ function mouseClicked () {
         showOutOfSuggestionMenu = false;
         showRestartSuggestionMenu = false;
         showThinking = false;
+        foodInput.hide();
+        showHungerAlert = false;
+        isMoving = false;
     }
 //press 'log feelings' and open feelings menu
     else if (showMainMenu === true && mouseX > gooberPosX+180 && mouseX < gooberPosX+340 && mouseY > gooberPosY-100 && mouseY < gooberPosY-60) {
@@ -552,6 +663,7 @@ function mouseClicked () {
         showFeelingsMenu = false
         showSuggestionMenu = false
         showAcceptedSuggestionMenu = false
+        isMoving = true;
     }
 // press 'sounds great' in declined suggestion menu
     else if (showMainMenu === false && showFeelingsMenu === false && showSuggestionMenu === false && showAcceptedSuggestionMenu === false && showDeclinedSuggestionMenu === true && showThinking === false && mouseX > gooberPosX+180 && mouseX < gooberPosX+407 && mouseY > gooberPosY-45 && mouseY < gooberPosY-15) {
@@ -581,7 +693,6 @@ function mouseClicked () {
         showOutOfSuggestionMenu = true
         allSuggestionsUsed === false
         suggestionsFilledOnce = false;
-        //pickSuggestion();
     }
 // press 'can i hear again' in OutOfSuggestionMenu
     else if (showOutOfSuggestionMenu === true && showThinking === false && mouseX > gooberPosX+180 && mouseX < gooberPosX+407 && mouseY > gooberPosY-17 && mouseY < gooberPosY+13) {
@@ -595,7 +706,6 @@ function mouseClicked () {
         restartSuggestionStartTime = millis();
         allSuggestionsUsed = false
         suggestionsFilledOnce = false;
-        //availableSuggestions = [];
         pickSuggestion();
     }
 // press 'thats ok' in OutOfSuggestionMenu
@@ -609,6 +719,7 @@ function mouseClicked () {
         showRestartSuggestionMenu = false
         allSuggestionsUsed = false
         suggestionsFilledOnce = false;
+        isMoving = true;
     }
     
 //feelings
@@ -868,16 +979,8 @@ function mouseClicked () {
         foodStartTime = millis();
         foodInput.value('');
         foodInput.hide();
+        resetHunger()
     }
-
-// done button in food menu
-    else if (mouseX > hungerPosX && mouseX < hungerPosX+100 && mouseY > hungerPosY && mouseY < hungerPosY+100) {
-        startHungerTimer()
-        console.log ('hunger ' + hunger)
-    }
-
-
-    saveState();
 }
 
 function drawMainMenu(x, y) {
@@ -1166,7 +1269,7 @@ function drawShareFoodMenu (x,y){
     textSize (20);
     text ('You have some food to share with me?  Yipee!', x+195, y-148, 220);
     text ('-and thats what I ate-', x+202, y+92);
-    foodInput.position(gooberPosX + 190, gooberPosY-80); // adjust to sit on your rect
+    foodInput.position(gooberPosX + 210, gooberPosY-68); // adjust to sit on your rect
 }
 function drawAcceptedFoodMenu (x,y){
     fill(menuFillColour);
@@ -1187,6 +1290,29 @@ function drawAcceptedFoodMenu (x,y){
     textSize (20);
     text ('ooo thats yummy!         i hope you enjoyed it and that it gave you lots of fuel', x+192, y-148, 220);
 }
+
+function drawHungerAlert (x,y){
+    fill(menuFillColour);
+    stroke(menuOutlineColour);
+    strokeWeight(menuOutlineWidth);
+
+    //thinking bubbles
+    ellipse (x+110, y-110, 30, 30);
+    ellipse (x+137, y-130, 20, 20);
+    ellipse (x+160, y-140, 15, 15);
+    //menu bubbles
+    rect(x+180, y-160, 220, 70, 20); //hungry
+
+    //text
+    push ();
+    fill(textColour);
+    stroke(textColour);
+    strokeWeight (0.75);
+    textSize (hungerTextSize);
+    text (hungerAlert, x+192, y-148, 200);
+    pop ();
+}
+
 
 function pickSuggestion(){
     // console.log('available suggestions:', availableSuggestions.length);
@@ -1283,7 +1409,6 @@ function pickSuggestion(){
     console.log('remaining:', availableSuggestions); // ← and here
 }
 
-
 function drawHungerMeter (x, y){ //x&y are hungerPos
 
     //fill
@@ -1306,50 +1431,57 @@ function drawHungerMeter (x, y){ //x&y are hungerPos
     textSize (20);
     text ('hunger: ' + hunger, x, y);
 }
-// function hungerMeter (limit, amount, interval){
-// //code by AI
-//     let timer = setInterval(() => {
-//         if (hunger >= limit) {
-//             clearInterval(timer); // stops when limit is hit
-//         } 
-//         else {
-//             hunger += amount;
-//             hunger = min(hunger, limit); // makes sure it doesn't go over the limit
-//             saveState();
-//         }
-//         }, interval);
-// }
 
-function startHungerTimer() {
-  hungerStartTime = Date.now();
-  hungerTimerRunning = true;
-  localStorage.setItem('hungerStartTime', hungerStartTime);
-  localStorage.setItem('hungerTimerRunning', true);
+//AI coded
+async function checkTime() {
+  let ipResponse = await fetch('https://api.ipify.org?format=json');
+  let ipData = await ipResponse.json();
+  let ip = ipData.ip;
+  
+  let timeResponse = await fetch('https://timeapi.io/api/time/current/ip?ipAddress=' + ip);
+  let timeData = await timeResponse.json();
+  
+  let hour = timeData.hour;
+  let minute = timeData.minute;
+  hunger = getHungerTimerValue(hour, minute);
+  saveState();
 }
 
-function stopHungerTimer() {
-  hungerTimerRunning = false;
-  localStorage.setItem('hungerTimerRunning', false);
+function getHungerTimerValue(hour, minute) {
+  let currentMinutes = hour * 60 + minute;
+  
+  let meals = [
+    { start: breakfastStart * 60, end: (breakfastStart + 2) * 60 },
+    { start: lunchStart * 60, end: (lunchStart + 2) * 60 },
+    { start: dinnerStart * 60, end: (dinnerStart + 2) * 60 },
+  ];
+
+  for (let meal of meals) {
+    if (currentMinutes >= meal.start && currentMinutes < meal.end) {
+      if (hungerReset) return 0; // stay at 0 if reset during this meal window
+      let elapsed = currentMinutes - meal.start;
+      let total = meal.end - meal.start;
+      return parseFloat(((elapsed / total) * 100).toFixed(1));
+    }
+  }
+
+  // outside all meal windows, clear the reset for next meal
+  hungerReset = false;
+  if (hunger >= 100) return 100;
+  return hunger;
 }
 
-function resetHungerTimer() {
-  hungerStartTime = null;
-  hungerTimerRunning = false;
-  localStorage.setItem('hungerStartTime', null);
-  localStorage.setItem('hungerTimerRunning', false);
+function resetHunger() {
+  hunger = 0;
+  hungerReset = true;
+  showHungerAlertTimer = millis();
 }
-
-function getHungerTimerValue() {
-  if (!hungerTimerRunning || hungerStartTime === null) return 0;
-  let elapsed = Date.now() - hungerStartTime;
-  let value = min(HUNGER_LIMIT, (elapsed / HUNGER_DURATION) * HUNGER_LIMIT);
-  return parseFloat(value.toFixed(1)); // ← round before returning
-}
-
 
 
 // Resize the canvas if the window is resized
 function windowResized() {
-  const { w, h } = canvasSize();
-  resizeCanvas(w, h);
+    const { w, h } = canvasSize();
+    resizeCanvas(w, h);
+    rightEdge = (width - 150)
+    leftEdge = (150)
 }
