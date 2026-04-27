@@ -9,7 +9,7 @@ For simplicity i will call the familiar a goober until it has been given a 'shap
 Response to the brief: <br/>
 im very excited about this project. I think its a fun idea to create a little goober and designing it in a way that affects how the user feels/ interacts with the goober. Im also very excited about working in p5js again since I understand how it works (its where i learned my current coding skills so im comfy here) which means that I dont have to rely on and use AI too much throughout this project but can also do a lot myself. Yes using AI might make the process quicker but my goal is to learn how to code so im using this project as a learning opportunity and only using AI when i get stuck or take too much time on a task that it starts negatively affecting the timeline of my project. <br/>
 
-Notes: <br/>
+Notes and opinions: <br/>
 19/04 <br/>
     To be very honest i feel very discouraged about this project at the moment. I think the main issue is that the course isnt what i was hoping it to be, which was to learn how to code these things. I really just hate having to use AI and having the feeling that I rely on it because the actual coding isnt being taught and it isnt possible to do the project without using AI (unless i make my idea really small) because it will be too out of scope and take too much time. It is such a stupid dilemma and I really dont know how to deal with it. To be completely honest i just want to give up because this doesnt feel 'worth it'. I would rather spend my time learning how to do the code so that i know how it works and can understand everything rather than spending it making something with AI that I know I wont be happy with since i cant really use it to achieve my 'goal'. I also dont think i'll be using any of these projects in my portfolio because I am not at all proud of using AI to make things. I think the true value behind things is when human effort and care and knowledge has been put into a project. I do think that I wouldnt be feeling as strongly about this if I already knew how to do the steps and rather use AI to make it quicker so that i can focus on other stuff but because i know 'nothing' about what im actually doing/ what the AI is doing.  <br/>
     My current plan is to just take a way simpler idea and see what i can do myself and still use this as a learning opportunity in some way so that i actually gain something from this rather than juts doing something just to hand it in for the project. My idea is to use AI to teach me how to do it but then i still do the actual coding myself using what the AI made as a guide for how different things work. I fins this quite a shame because it take the opportunity and job away from a real person who could teach me this but that doesnt seem to be a proper option at the moment so I will try to do the best out of what i have. <br/>
@@ -28,7 +28,9 @@ Notes: <br/>
         AI makes mistakes in coding because it operates on probabilistic pattern matching rather than true logical understanding, often prioritizing statistical likelihood over functional correctness. It predicts the next likely code snippet based on training data, leading to hallucinations, outdated library usage, lack of production-level robustness, and poor handling of complex, multi-step logic. <br/>
     so basically its kind of a terrible thing to use for coding and things that are logic based.... i simply dont understand <br/>
 26/04 <br/>
-    -why does claude suggest things for me to do and then it turns out that the function doesnt even exist in p5js?????? its driving me crazy constantly fact checking everything and having to problem solve. i thought the AI was supposed to be smart.... At this rate it would be easier to do it myself...
+    -why does claude suggest things for me to do and then it turns out that the function doesnt even exist in p5js?????? its driving me crazy constantly fact checking everything and having to problem solve. i thought the AI was supposed to be smart.... At this rate it would be easier to do it myself... <br/>
+28/04 <br/>
+    -getting frustrated again with the fact that when i use AI for certain 'complex' things, it does it in a 'complicated way' and then i dont fully know what is happening or how to fix it (e.g. hunger timer) which would not be the case if i did it myself (e.g. doing my own research and using p5js websites etc.). Yes I can ask AI to explain it but i wouldnt have the same confdence comparede to me making it mysef. <br/>
 
 
 idea 1: <br/>
@@ -207,12 +209,19 @@ Hunger Meter:
     ... just realized that this actually doesnt work when the page isnt open which isnt ideal... i would instead need to make something that checks how long it has been since e.g. breakfast time/ 8 am and then base the hunger meter off that. im hoping that i can use some of the code i already have.. <br/>
     lets aks claude: (took about an hour to trouble shoot) <br/>
     ![alt text](<Images-ReadMe/AI created - hunger timer.png>)
+    ⤷  it dont work...... Because the the 'check timer' which updates hunger ony gets run every 30 seconds, hunger doesnt alwasy reach 100 since the last 'checkTimer' that would update it to 100 would run a couple seconds after e.g. 10am, but since the function doesnt update anymore 2 hours after hunger starts, it doesnt run. <br/>
+    -my current solution is to trigger riot mode at 95 instead of 100 because the 'timer' will alwasy make it that far. I would prefer to have a more accurate solution becasue like this I also cant display the number value of hunger since it will never hit 100, but i dont currently have time for it (i will revisit this issue if time alows for it) <br/>
+
 
 making goober move: <br/>
     -code done by myself :D <br/>
     -started by making moveGoober function that gets triggered when 'isMoving' is set to true so that i can easily stop goober from moving. <br/>
     -inside moveGoober i used gooberPos and 2 new variables rightEdge and leftEdge to move the goober until it hits one of the edges (left/right edge ads a margin so that the goober never actually touches the edge of the window). left/right edge are also updated in windowResized to make sure it stay accurate. <br/>
     -if i have more time i want to add slight up and down movement as well to make goober seem more floaty but this works for now <br/>
+
+making the text flip when goober is a certain distance across the screen. <br/>
+    -theoretically this should be easily done by just flipping x to be negative instead of positve for the text but this is not high enough of a priority so i will do this at the end if i have enough time. 
+
 
 different states: 
     -i used if statements to check the value of hunger to trigger different states and alerts <br/>

@@ -274,7 +274,6 @@ function draw() {
     drawGoober(gooberPosX, gooberPosY);
     drawHungerMeter(hungerPosX, hungerPosY);
     setHungerAlert (hungerPosX, hungerPosY);
-    
 
     if (showMainMenu === true){
         drawMainMenu(gooberPosX, gooberPosY);
@@ -332,7 +331,7 @@ function draw() {
             ){
         drawHungerAlert(gooberPosX, gooberPosY);
     }
-    if (millis() - hungerTimeCheck > 30000) {
+    if (millis() - hungerTimeCheck > 30000) { //sets hunger every 30 seconds
         checkTime();
         hungerTimeCheck = millis();
     }
@@ -521,11 +520,21 @@ function drawGoober(x, y){
 
 function drawGooberState (x, y){
 //expression
-    if (hunger === 100){
+    if (hunger >= 95){
         drawRiotState (gooberPosX, gooberPosY);
     }
-    if (hunger === 75){
+    if (hunger >= 75 && hunger < 95){
         gooberSpeed = (3);
+    }
+    if (hunger >25 && hunger <75){
+        gooberSpeed = (2);
+    }
+    if (hunger <= 25){
+        contemptFace = true;
+        happyFace = false;
+        sadFace = false;
+        angryFace = false;
+        gooberSpeed = (1);
     }
 
 }
@@ -560,7 +569,7 @@ function setHungerAlert (x,y) {
         hungerTextSize = (23);
     }
     //always
-    if (hunger === 100 && showHungerAlert === false) {
+    if (hunger > 95 && showHungerAlert === false) {
         showHungerAlert = true;
         //closeHungerAlertTimer = millis();
         hungerAlert = ('IM HUNRGY!')
@@ -1437,13 +1446,14 @@ async function checkTime() {
   let ipResponse = await fetch('https://api.ipify.org?format=json');
   let ipData = await ipResponse.json();
   let ip = ipData.ip;
-  
+ 
   let timeResponse = await fetch('https://timeapi.io/api/time/current/ip?ipAddress=' + ip);
   let timeData = await timeResponse.json();
   
   let hour = timeData.hour;
   let minute = timeData.minute;
-  hunger = getHungerTimerValue(hour, minute);
+
+  //hunger = getHungerTimerValue(hour, minute);
   saveState();
 }
 
@@ -1463,7 +1473,7 @@ function getHungerTimerValue(hour, minute) {
       let total = meal.end - meal.start;
       return parseFloat(((elapsed / total) * 100).toFixed(1));
     }
-  }
+}
 
   // outside all meal windows, clear the reset for next meal
   hungerReset = false;
@@ -1475,6 +1485,7 @@ function resetHunger() {
   hunger = 0;
   hungerReset = true;
   showHungerAlertTimer = millis();
+  saveState();
 }
 
 
