@@ -31,6 +31,9 @@ Notes and opinions: <br/>
     -why does claude suggest things for me to do and then it turns out that the function doesnt even exist in p5js?????? its driving me crazy constantly fact checking everything and having to problem solve. i thought the AI was supposed to be smart.... At this rate it would be easier to do it myself... <br/>
 28/04 <br/>
     -getting frustrated again with the fact that when i use AI for certain 'complex' things, it does it in a 'complicated way' and then i dont fully know what is happening or how to fix it (e.g. hunger timer) which would not be the case if i did it myself (e.g. doing my own research and using p5js websites etc.). Yes I can ask AI to explain it but i wouldnt have the same confdence comparede to me making it mysef. <br/>
+29/04 <br/>
+    -its quite 'nice' working with AI when it works without 'doing things wrong'. But I still feel like i am missing out on a lot of opportunities to learn and better my skills. Yes it does things faster working with AI but i am still very much under the impression that it is better to do it yourself because then you have more control and have more knowledge on how to fix problems and use similar systems in the future. Its a shame how many learning opportunities AI takes from us and I think it should only really be used once someone has learned how to properly code without relying on AI to help in order to make certain tasks 'quicker', instead of using Ai as a 'step skipper'. <br/>
+    As fun as this project has been and as much as I have learnt, I really just wish that we would be taught how to code and thereby learn a much more valuable skill. <br/>
 
 
 idea 1: <br/>
@@ -111,7 +114,7 @@ Goobers States: <br/>
     -Colour state: <br/>
         ⤷ changes depending on how user is feeling <br/>
         ⤷ goes dark grey when feelings arent logged in 6/8 hours  <br/>
-    -Curious state over 3 hours <br/>
+    -Curious state over 4 hours <br/>
         ⤷ not curious = all normal <br/>
         ⤷ 0.25 curious = makes noise every 20min <br/>
         ⤷ 0.5 curious = comes close to screen and makes noise every 20min <br/>
@@ -227,3 +230,37 @@ different states:
     -i used if statements to check the value of hunger to trigger different states and alerts <br/>
     ![alt text](<Images-ReadMe/AI created - hunger timer.png>)
     -alerts before goober is 100% hungry get triggered after a certain amount of time and stay visible for a certain amount of time. this is all done using timers and checking how much time has passed since they where started. <br/>
+    -i used the same 'timer' mechanic as for 'thinking' to make goober be happy when the user interacts with them positively (e.g. log feeling, share food, accept suggestion) and sad when the user declines a suggestion. 
+
+
+help menu: <br/>
+    -the button 'ask for help' in the main menu redirects the user to the 'help menu' which offers: task suggestions, food suggestions, and encouragement.  <br/>
+    -when pressing 'task suggestion' the same 'suggestion' menu that opens after logging a feeling shows. <br/>
+    -when pressing 'encouragement' the goober pulls from an array and gives the user a random compliment/ advice <br/>
+    ⤷ done easily using an array and 'random'. 'encouragement' doesn't need storing/ saving locally since I only want the goober to give once 'encouragement' per 'ask for help'. If the user needs more then they can ask for help again where there is of course a chance that goober will say the same things. I like this since it 'enforces' goobers previous 'encouragement'. Additionally by adding lots of 'encouragements' the chance of doubling up is smaller. I added 11 options for now but ideally i would have a lot more (just not worth my time adding more at this moment) <br/>
+    -gives a random recipe using this API: www.themealdb.com/api/json/v1/1/random.php <br/>
+    Since the API has a huge amount of recipes I decided to let the user 'ask for a different recipe' unlimited times (instead of cutting it off after 5 options like the task suggestions) <br/>
+    ⤷ I managed to get it working so that it would display the name and the link but the link wasnt clickable so i asked claude for some help: <br/>
+    ![alt text](<Images-ReadMe/AI created - clickable link.png>) <br/>
+    This was really easy and worked on the first try. <br/>
+
+'want meter': <br/>
+    -the want meter works similarly to the 'hunger meter' in that it increases over time. However it doesnt start at set times during the day but rather 'continuously' increases. <br/>
+    -I want the timer to increase by 0.415 every minuit or 25 per hour so that 100% is hit after 4 hours. <br/>
+    -Idealy I would like to use some of the code from the 'hunger meter' to make my own version for the 'want meter' to test my skills and what i have learnt so far. Instead I will ask AI for help since I sadly dont have enough time to do it myself. <br/>
+    ![alt text](<Images-ReadMe/AI created - want meter.png>)
+
+changing the want meter value when user interacts: <br/>
+    -When hunger is higher than 75 i want to increase the speed that the want meter goes up by: <br/>
+    ![alt text](<Images-ReadMe/AI created - speeding up want.png>) <br/>
+    -when the user interacts with the goober it will increase or decrease the amount of want in the meter: <br/>
+    ⤷increase:  <br/>
+        suggestion declined +3 <br/>
+    ⤷decrease:  <br/>
+        feeling logged -50 <br/>
+        suggestion accepted -30 (enough to cancel out 10 declined suggestions) <br/> 
+        shared food -50 <br/> (enough to cancel out most of the 'speed increase' when hunger is >75)
+        asked for encouragement -15 <br/>
+        asked for food help -15 <br/>
+    - originally i thought it best for the want value to not be able to go bellow 0 but then realized that it would 'screw over' the user if they did multiple things at once. E.g.: the user logs their feelings and accepts a suggestion which would add to 80, however if the want meter is only 60 then 20 of the users 'earned decrease points' are wasted which may encourage them to wait longer to do certain things like eat and ask for help which is the very opposite of what the goobers purpose is. <br/>
+    ![alt text](<Images-ReadMe/AI created - want below 0.png>)

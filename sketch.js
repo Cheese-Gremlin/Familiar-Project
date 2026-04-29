@@ -1,7 +1,6 @@
 // sketch.js — p5.js starter
 
-// Set to true if you want to reserve space for a side UI panel (360px wide)
-const SHOW_UI = false;
+let showExtraButtons = false; //turns off buttons in main menu that arent usable yet
 
 let rightEdge;
 let leftEdge;
@@ -25,12 +24,17 @@ let showThinking = false;
 let showShareFoodMenu = false;
 let showAcceptedFoodMenu = false;
     let foodStartTime = Infinity;
+let showHelpMenu = false;
+let showEncouragementMenu = false;
+let showFoodSuggestionMenu = false;
+
 
 // food stuff
 let foodInput;
 let foodInputHasText = false;
 
 // set suggestions
+let suggestion = '';
 let availableSuggestions = [];
 let allSuggestionsUsed = false;
 let suggestionsFilledOnce = false;
@@ -120,8 +124,29 @@ let nothingSuggestions = [
   'Taking the day off to do what brings you joy'
 ];
 
+//let encouragement = ('Its not whether you get knocked down, its whether you get up');
+let encouragement = '';
+let encouragementList = [
+    'You are stronger than you think',
+    'You dont have to have all of the answers right now',
+    'You are doing the best you can',
+    'You got this! One step at a time',
+    'You are capable of incredible things',
+    'I have no doubt that you will be great at this',
+    'You are not alone, we are in this together',
+    'Your kindness makes the world a better place',
+    'Mistakes are just happy little Accidents - Bob Ross',
+    'The only time you fail is when you fall down and stay down',
+    'Its not whether you get knocked down, its whether you get up', //<- max length
+    //'Every day may not be a good day - but there is something good in every day', <- too long
+];
+
+let recipe = '';
+let recipeLink = '';
+let recipeLinkElement;
+
 //hunger meter
-let hunger = (0);
+let hunger = 0
 let hungerTimeCheck = 0;
 let hungerReset = false;
 let hungerPosX = (10);
@@ -142,6 +167,25 @@ let breakfastStart = 8;
 let lunchStart = 13;
 let dinnerStart = 18;
 
+
+//want meter
+let want = 0;
+let wantStartTime = null;
+let wantSpeedMultiplier = 1;
+let fasterWant = 1.5;
+const WANT_LIMIT = 100;
+const WANT_DURATION = 14400000; // 14400000 = 4 hours in ms
+let wantPosX = (300);
+let wantPosY = (20);
+let wantFillColour = [107, 65, 85] // #6ad94c
+let wantOutlineColour = [0, 0, 27] // #454545
+let wantOutlineWidth = (5)
+let showWantAlert = false;
+let wantAlert = ('Goober wishes you were here')
+let wantTextSize = (23);
+    let showWantAlertTimer = 0;
+    let closeWantAlertTimer = Infinity;
+
 //goober stuff
 let gooberOutlineColour = [0, 0, 100];
 let gooberFillColour = [0, 0, 100, 200];
@@ -154,7 +198,7 @@ let gooberPosX = (150);
 let gooberPosY = (250);
 
 // moving goober
-let isMoving = true
+let isMoving = true;
 let gooberSpeed = (1);
 let moveRight = true;
 let moveLeft = false;
@@ -164,6 +208,11 @@ let contemptFace = true;
 let happyFace = false;
 let sadFace = false;
 let angryFace = false;
+
+let showHappy = false;
+    let restartHappyTime = Infinity;
+let showSad = false;
+    let restartSadTime = Infinity;
 
 // user feelings
 let nothing = false;         // #969696
@@ -179,7 +228,7 @@ let excited = false;         // #b5eb64
 let happy = false;           // #effc77
 let calm = false;            // #fff8e8
 
-let currentFeeling = ('Neutral');
+let currentFeeling = ('neutral');
 
 //---------------------------------------------------------------------------
 function preload(){
@@ -191,13 +240,8 @@ function isMobile() {
 }
 
 function canvasSize() {
-  if (isMobile()) {
-    return { w: window.innerWidth, h: window.innerHeight };
-  }
-  return {
-    w: SHOW_UI ? windowWidth - 360 : windowWidth - 40,
-    h: windowHeight - 40,
-  };
+    if (isMobile()) return { w: window.innerWidth, h: window.innerHeight };
+    return { w: windowWidth - 40, h: windowHeight - 40 };
 }
 
 function setup() {
@@ -214,6 +258,7 @@ function setup() {
     annoyed = localStorage.getItem('annoyed') === 'true';
     angry = localStorage.getItem('angry') === 'true';
     tired = localStorage.getItem('tired') === 'true';
+    nothing = localStorage.getItem('nothing') === 'true';
     currentFeeling = localStorage.getItem('currentFeeling') || 'neutral';
     //hunger meter
     hungerReset = localStorage.getItem('hungerReset') === 'true';
@@ -229,6 +274,24 @@ function setup() {
     rightEdge = (width - 150)
     leftEdge = (150)
     checkTime()
+    //resetWant(); //needs to be off. only use for dev
+
+// making the recipe link clickable (AI made)
+    recipeLinkElement = createElement('a', 'Watch Recipe');
+    recipeLinkElement.attribute('target', '_blank'); // opens in new tab
+    recipeLinkElement.style('font-family', 'Indie Flower');
+    recipeLinkElement.style('font-size', '20px');
+    recipeLinkElement.style('color', 'hsl(354, 0%, 17%)');
+    recipeLinkElement.hide(); // hidden until needed
+// want stuff:
+    wantStartTime = localStorage.getItem('wantStartTime');
+    wantSpeedMultiplier = parseFloat(localStorage.getItem('wantSpeedMultiplier')) || 1;
+    // only set start time if it has never been started before
+    if (wantStartTime === null) {
+        wantStartTime = Date.now();
+        saveState();
+    }
+    want = getWantValue();
 
 // food input stuff
     foodInput = createElement('textarea');
@@ -260,20 +323,30 @@ function saveState() {
         localStorage.setItem('annoyed', annoyed);
         localStorage.setItem('angry', angry);
         localStorage.setItem('tired', tired);
+        localStorage.setItem('nothing', nothing);
 
         localStorage.setItem('currentFeeling', currentFeeling);
 
         localStorage.setItem('hunger', hunger);
         localStorage.setItem('hungerReset', hungerReset);
+
+        localStorage.setItem('wantStartTime', wantStartTime);
+        localStorage.setItem('wantSpeedMultiplier', wantSpeedMultiplier);
+        localStorage.setItem('want', want);
 }
 
 function draw() {
     background (245, 35, 67);
-    drawGooberState (gooberPosX, gooberPosY);
 
+    drawGooberState (gooberPosX, gooberPosY);
     drawGoober(gooberPosX, gooberPosY);
+
     drawHungerMeter(hungerPosX, hungerPosY);
-    setHungerAlert (hungerPosX, hungerPosY);
+    setHungerAlert ();
+
+    drawWantMeter (wantPosX, wantPosY);
+    want = getWantValue();
+    setWantAlert ()
 
     if (showMainMenu === true){
         drawMainMenu(gooberPosX, gooberPosY);
@@ -317,7 +390,17 @@ function draw() {
             isMoving = true;
         }
     }
-    if (showHungerAlert === true && 
+    if (showHelpMenu === true){
+        drawHelpMenu(gooberPosX, gooberPosY);
+    }
+    if (showEncouragementMenu === true){ //encouragement
+        drawEncouragementMenu(gooberPosX, gooberPosY);
+    }
+    if (showFoodSuggestionMenu === true){ 
+        drawFoodSuggestionMenu(gooberPosX, gooberPosY);
+    }
+    if (showWantAlert === true && 
+        showHungerAlert === false && 
         showMainMenu === false &&
         showFeelingsMenu === false &&
         showSuggestionMenu === false &&
@@ -327,8 +410,21 @@ function draw() {
         showOutOfSuggestionMenu === false &&
         showRestartSuggestionMenu === false &&
         showShareFoodMenu === false &&
-        showAcceptedFoodMenu === false
-            ){
+        showAcceptedFoodMenu === false ){
+        drawWantAlert(gooberPosX, gooberPosY);
+    }
+    if (showHungerAlert === true && 
+        showWantAlert === false && 
+        showMainMenu === false &&
+        showFeelingsMenu === false &&
+        showSuggestionMenu === false &&
+        showAcceptedSuggestionMenu === false &&
+        showDeclinedSuggestionMenu === false &&
+        showThinking === false &&
+        showOutOfSuggestionMenu === false &&
+        showRestartSuggestionMenu === false &&
+        showShareFoodMenu === false &&
+        showAcceptedFoodMenu === false ){
         drawHungerAlert(gooberPosX, gooberPosY);
     }
     if (millis() - hungerTimeCheck > 30000) { //sets hunger every 30 seconds
@@ -520,66 +616,130 @@ function drawGoober(x, y){
 
 function drawGooberState (x, y){
 //expression
-    if (hunger >= 95){
-        drawRiotState (gooberPosX, gooberPosY);
-    }
-    if (hunger >= 75 && hunger < 95){
-        gooberSpeed = (3);
-    }
-    if (hunger >25 && hunger <75){
-        gooberSpeed = (2);
-    }
-    if (hunger <= 25){
-        contemptFace = true;
-        happyFace = false;
+    if (showHappy === true){
+        contemptFace = false;
+        happyFace = true; //happy
         sadFace = false;
         angryFace = false;
-        gooberSpeed = (1);
+        if (millis() - restartHappyTime > 1500){
+            happyFace = false;
+            showHappy = false;
+        }
     }
-
-}
-    function drawRiotState (x, y){
+    else if (showSad === true){
+        contemptFace = false;
+        happyFace = false; 
+        sadFace = true; //sad
+        angryFace = false;
+        if (millis() - restartSadTime > 1500){
+            sadFace = false;
+            showSad = false;
+        }
+    }
+    else if (hunger >= 95 || want >= 95){
         contemptFace = false;
         happyFace = false;
         sadFace = false;
-        angryFace = true;
+        angryFace = true; //angry
         gooberSpeed = (4);
     }
-
-function setHungerAlert (x,y) {
-    //every 20min
-    if (hunger === 25 && showHungerAlert === false && millis() - showHungerAlertTimer > 1200000) {
-        showHungerAlert = true;
-        closeHungerAlertTimer = millis();
-        hungerAlert = ('Hmmmm Im starting to get hungry')
-        hungerTextSize = (23);
+    else if ((hunger >= 75 && hunger < 95) || (want >= 75 && want < 95)){
+        gooberSpeed = (3);
+        contemptFace = true; //contempt
+        happyFace = false;
+        sadFace = false;
+        angryFace = false;
     }
-    //every 15 min
-    if (hunger === 50 && showHungerAlert === false && millis() - showHungerAlertTimer > 900000) {
+    else if ((hunger > 50 && hunger < 75) || (want > 50 && want < 75)) {
+        gooberSpeed = 2;
+        contemptFace = true; //contempt
+        happyFace = false;
+        sadFace = false;
+        angryFace = false;
+    }
+    else if (hunger <= 25 || want <= 25 ){
+        gooberSpeed = (1);
+        contemptFace = true; //contempt
+        happyFace = false;
+        sadFace = false;
+        angryFace = false;
+    }
+    if (hunger < 75 && wantSpeedMultiplier !== 1) {
+        resetWantSpeed();
+    }
+    if (hunger > 75 && wantSpeedMultiplier !== fasterWant) {
+        speedUpWant();
+    }
+}
+
+function setHungerAlert () {
+    //always
+    if (hunger >= 95 && showHungerAlert === false) {
         showHungerAlert = true;
-        closeHungerAlertTimer = millis();
-        hungerAlert = ('Do you have any food to share?')
-        hungerTextSize = (23);
+        hungerAlert = ('IM HUNGRY!')
+        hungerTextSize = (41);
     }
     //every 10 min
-    if (hunger === 75 && showHungerAlert === false && millis() - showHungerAlertTimer > 600000) {
+    else if (hunger >= 75 && hunger < 95 && showHungerAlert === false && millis() - showHungerAlertTimer > 600000) {
         showHungerAlert = true;
         closeHungerAlertTimer = millis();
         hungerAlert = ('Yeah.. Im getting very hungry now..')
         hungerTextSize = (23);
     }
-    //always
-    if (hunger > 95 && showHungerAlert === false) {
+    //every 15 min
+    else if (hunger >= 50 && hunger < 75 && showHungerAlert === false && millis() - showHungerAlertTimer > 900000) {
         showHungerAlert = true;
-        //closeHungerAlertTimer = millis();
-        hungerAlert = ('IM HUNRGY!')
-        hungerTextSize = (41);
+        closeHungerAlertTimer = millis();
+        hungerAlert = ('Do you have any food to share?')
+        hungerTextSize = (23);
+    }
+    //every 20min
+    else if (hunger >= 25 && hunger < 50 && showHungerAlert === false && millis() - showHungerAlertTimer > 1200000) {
+        showHungerAlert = true;
+        closeHungerAlertTimer = millis();
+        hungerAlert = ('Hmmmm Im starting to get hungry')
+        hungerTextSize = (23);
     }
 
     //hides hunger alert after 
     if (showHungerAlert === true && millis() - closeHungerAlertTimer > 5000) {
         showHungerAlert = false;
         showHungerAlertTimer = millis();
+    }
+}
+function setWantAlert () {
+    //always
+    if (want >= 95 && showWantAlert === false) {
+        showWantAlert = true;
+        wantAlert = ('Goober feels Abandoned')
+        wantTextSize = (41);
+    }
+    //every 10 min
+    else if (want >= 75 && want < 95 && showWantAlert === false && millis() - showWantAlertTimer > 600000) {
+        showWantAlert = true;
+        closeWantAlertTimer = millis();
+        wantAlert = ('Goober wishes you were here')
+        wantTextSize = (23);
+    }
+    //every 15 min
+    else if (want >= 50 && want <75 && showWantAlert === false && millis() - showWantAlertTimer > 900000) {
+        showWantAlert = true;
+        closeWantAlertTimer = millis();
+        wantAlert = ('Goober is curious as to how you are')
+        wantTextSize = (23);
+    }
+    //every 20min
+    else if (want >= 25 && want < 50 && showWantAlert === false && millis() - showWantAlertTimer > 1200000) {
+        showWantAlert = true;
+        closeWantAlertTimer = millis();
+        wantAlert = ('Goober is thinking about you')
+        wantTextSize = (23);
+    }
+
+    //hides want alert after 
+    if (showWantAlert === true && millis() - closeWantAlertTimer > 5000) {
+        showWantAlert = false;
+        showWantAlertTimer = millis();
     }
 }
 
@@ -614,11 +774,15 @@ function mouseClicked () {
         showOutOfSuggestionMenu = false;
         showRestartSuggestionMenu = false;
         showThinking = false;
+        showHelpMenu = false;
+        showFoodSuggestionMenu = false;
+        showEncouragementMenu = false;
+        showShareFoodMenu = false;
         foodInput.hide();
         isMoving = true;
     }
 // press on goober and open main menu
-    if (showMainMenu === false && showThinking === false && showRestartSuggestionMenu === false &&
+    if (showMainMenu === false && showThinking === false && showRestartSuggestionMenu === false && 
         mouseX > gooberPosX - gooberWidth/2 && mouseX < gooberPosX + gooberWidth/2 && mouseY > gooberPosY - gooberHeight/2 && mouseY < gooberPosY + gooberHeight/2) {
         showMainMenu = true
         showFeelingsMenu = false;
@@ -628,8 +792,12 @@ function mouseClicked () {
         showOutOfSuggestionMenu = false;
         showRestartSuggestionMenu = false;
         showThinking = false;
+        showAcceptedFoodMenu = false;
+        showHelpMenu = false;
         foodInput.hide();
         showHungerAlert = false;
+        showEncouragementMenu = false;
+        showShareFoodMenu = false;
         isMoving = false;
     }
 //press 'log feelings' and open feelings menu
@@ -643,6 +811,9 @@ function mouseClicked () {
         showFeelingsMenu = false
         showSuggestionMenu = true
         pickSuggestion();
+        lowerWant (50);
+        showHappy = true;
+        restartHappyTime = millis()
     }
 // press 'that sounds great' in suggestion menu
     else if (showMainMenu === false && showFeelingsMenu === false && showSuggestionMenu === true && showDeclinedSuggestionMenu === false && mouseX > gooberPosX+180 && mouseX < gooberPosX+407 && mouseY > gooberPosY+74 && mouseY < gooberPosY+104) {
@@ -650,6 +821,9 @@ function mouseClicked () {
         showFeelingsMenu = false
         showSuggestionMenu = false
         showAcceptedSuggestionMenu = true
+        lowerWant (30);
+        showHappy = true;
+        restartHappyTime = millis()
     }
 // press 'no thank you' in suggestion menu
     else if (showMainMenu === false && showFeelingsMenu === false && showSuggestionMenu === true && showDeclinedSuggestionMenu === false && mouseX > gooberPosX+180 && mouseX < gooberPosX+407 && mouseY > gooberPosY+112 && mouseY < gooberPosY+142) {
@@ -658,6 +832,9 @@ function mouseClicked () {
         showSuggestionMenu = false
         showDeclinedSuggestionMenu = true
         pickSuggestion();
+        showSad = true;
+        restartSadTime = millis()
+        increaseWant (3);
     }
 // press 'i would like more help' in accepted suggestion menu
     else if (showMainMenu === false && showFeelingsMenu === false && showSuggestionMenu === false && showAcceptedSuggestionMenu === true && showDeclinedSuggestionMenu === false && mouseX > gooberPosX+180 && mouseX < gooberPosX+407 && mouseY > gooberPosY-45 && mouseY < gooberPosY-15) {
@@ -681,9 +858,12 @@ function mouseClicked () {
         showSuggestionMenu = false
         showDeclinedSuggestionMenu = false
         showAcceptedSuggestionMenu = true
+        lowerWant (30);
+        showHappy = true;
+        restartHappyTime = millis()
     }
 // press 'no thanks' in declined suggestion menu
-    else if (showMainMenu === false && showFeelingsMenu === false && showSuggestionMenu === false && showAcceptedSuggestionMenu === false && showDeclinedSuggestionMenu === true && showThinking === false && allSuggestionsUsed === false && mouseX > gooberPosX+180 && mouseX < gooberPosX+407 && mouseY > gooberPosY-5 && mouseY < gooberPosY+25) {
+    else if (allSuggestionsUsed === false && showMainMenu === false && showFeelingsMenu === false && showSuggestionMenu === false && showAcceptedSuggestionMenu === false && showDeclinedSuggestionMenu === true && showThinking === false && mouseX > gooberPosX+180 && mouseX < gooberPosX+407 && mouseY > gooberPosY-5 && mouseY < gooberPosY+25) {
         showMainMenu = false
         showFeelingsMenu = false
         showSuggestionMenu = false
@@ -691,6 +871,9 @@ function mouseClicked () {
         showThinking = true
         thinkingStartTime = millis();
         pickSuggestion();
+        showSad = true;
+        restartSadTime = millis()
+        increaseWant (3);
     }
 // press 'no thanks' in declined suggestion menu and out of suggestions
     else if (allSuggestionsUsed === true && showOutOfSuggestionMenu === false && showMainMenu === false && showFeelingsMenu === false && showSuggestionMenu === false && showAcceptedSuggestionMenu === false && showDeclinedSuggestionMenu === true && showThinking === false && mouseX > gooberPosX+180 && mouseX < gooberPosX+407 && mouseY > gooberPosY-5 && mouseY < gooberPosY+25) {
@@ -700,8 +883,11 @@ function mouseClicked () {
         showDeclinedSuggestionMenu = false
         showThinking = false
         showOutOfSuggestionMenu = true
-        allSuggestionsUsed === false
+        allSuggestionsUsed = false
         suggestionsFilledOnce = false;
+        showSad = true;
+        restartSadTime = millis()
+        increaseWant (3);
     }
 // press 'can i hear again' in OutOfSuggestionMenu
     else if (showOutOfSuggestionMenu === true && showThinking === false && mouseX > gooberPosX+180 && mouseX < gooberPosX+407 && mouseY > gooberPosY-17 && mouseY < gooberPosY+13) {
@@ -989,7 +1175,68 @@ function mouseClicked () {
         foodInput.value('');
         foodInput.hide();
         resetHunger()
+        showHappy = true;
+        restartHappyTime = millis()
+        lowerWant (50);
     }
+
+//ask for help button in main menu
+    else if (showMainMenu === true && showHelpMenu === false &&  mouseX > gooberPosX+180 && mouseX < gooberPosX+332 && mouseY > gooberPosY && mouseY < gooberPosY+40){
+        showMainMenu = false;
+        showHelpMenu = true;
+    }
+    //encouragement
+    else if (showHelpMenu === true &&  mouseX > gooberPosX+180 && mouseX < gooberPosX+339 && mouseY > gooberPosY-100 && mouseY < gooberPosY-60){
+        showMainMenu = false;
+        showHelpMenu = false;
+        showEncouragementMenu = true;
+        pickEncouragement();
+        lowerWant (15);
+        showHappy = true;
+        restartHappyTime = millis()
+    }
+    //'thank you' in encouragement
+    else if (showHelpMenu === false  && showEncouragementMenu === true &&  mouseX > gooberPosX+180 && mouseX < gooberPosX+387 && mouseY > gooberPosY-60 && mouseY < gooberPosY-20){
+        showMainMenu = false;
+        showHelpMenu = false;
+        showEncouragementMenu = false;
+        isMoving = true;
+    }
+    //task help
+    else if (showHelpMenu === true &&  mouseX > gooberPosX+180 && mouseX < gooberPosX+339 && mouseY > gooberPosY-50 && mouseY < gooberPosY-10){
+        showMainMenu = false;
+        showHelpMenu = false;
+        showSuggestionMenu = true;
+        pickSuggestion();
+    }
+    //food help
+    else if (showHelpMenu === true &&  mouseX > gooberPosX+180 && mouseX < gooberPosX+339 && mouseY > gooberPosY && mouseY < gooberPosY+40){
+        showMainMenu = false;
+        showHelpMenu = false;
+        showFoodSuggestionMenu = true;
+        pickRecipe ();
+        recipeLinkElement.show();
+        lowerWant (15);
+        showHappy = true;
+        restartHappyTime = millis()
+    }
+    //'what else' in food help
+    else if (showHelpMenu === false  && showFoodSuggestionMenu === true &&  mouseX > gooberPosX+180 && mouseX < gooberPosX+387 && mouseY > gooberPosY-60 && mouseY < gooberPosY-20){
+        showMainMenu = false;
+        showHelpMenu = false;
+        showFoodSuggestionMenu = true;
+        isMoving = false;
+        pickRecipe ();
+    }
+    //'thank you' in food help
+    else if (showHelpMenu === false  && showFoodSuggestionMenu === true &&  mouseX > gooberPosX+180 && mouseX < gooberPosX+387 && mouseY > gooberPosY-10 && mouseY < gooberPosY+30){
+        showMainMenu = false;
+        showHelpMenu = false;
+        showFoodSuggestionMenu = false;
+        isMoving = true;
+        recipeLinkElement.hide();
+    }
+    saveState ();
 }
 
 function drawMainMenu(x, y) {
@@ -1006,8 +1253,10 @@ function drawMainMenu(x, y) {
     rect(x+180, y-100, 165, 40, 20); //feeling
     rect(x+180, y-50, 167, 40, 20); //food
     rect(x+180, y, 152, 40, 20); //help 
+    if (showExtraButtons === true){
     rect(x+180, y+50, 242, 40, 20); //tasks 
     rect(x+180, y+100, 262, 40, 20); //proud
+    }
 
     //text
     fill(textColour);
@@ -1018,8 +1267,10 @@ function drawMainMenu(x, y) {
     text ('-Log a feeling •‿•', x+195, y-75);
     text ('-Share food 𓌉◯𓇋', x+195, y-23);
     text ('-Ask for Help ♡', x+195, y+27);
+    if (showExtraButtons === true){
     text ('-Share what you enjoy ☆', x+195, y+77);
     text ('-Say Your Proud of Yourself', x+195, y+125);
+    }
     
 }
 function drawFeelingsMenu(x, y) {
@@ -1300,7 +1551,7 @@ function drawAcceptedFoodMenu (x,y){
     text ('ooo thats yummy!         i hope you enjoyed it and that it gave you lots of fuel', x+192, y-148, 220);
 }
 
-function drawHungerAlert (x,y){
+function drawHelpMenu(x,y){
     fill(menuFillColour);
     stroke(menuOutlineColour);
     strokeWeight(menuOutlineWidth);
@@ -1310,22 +1561,84 @@ function drawHungerAlert (x,y){
     ellipse (x+137, y-130, 20, 20);
     ellipse (x+160, y-140, 15, 15);
     //menu bubbles
-    rect(x+180, y-160, 220, 70, 20); //hungry
+    rect(x+180, y-160, 185, 50, 20); //of course!
+    rect(x+180, y-100, 158, 40, 20); //Encouragement
+    rect(x+180, y-50, 165, 40, 20); //task
+    rect(x+180, y, 165, 40, 20); //food 
+    
 
     //text
-    push ();
     fill(textColour);
-    stroke(textColour);
-    strokeWeight (0.75);
-    textSize (hungerTextSize);
-    text (hungerAlert, x+192, y-148, 200);
-    pop ();
+    stroke(textColour)
+    strokeWeight (0.75)
+    textSize (20);
+    text ('Of course!', x+195, y-140, );
+    text ('I would love to help', x+195, y-120);
+    text ('-Encouragement', x+195, y-75); 
+    text ('-Task Suggestion', x+195, y-23);
+    text ('-Food Suggestion', x+195, y+27);
 }
 
+function drawEncouragementMenu(x,y){
+    fill(menuFillColour);
+    stroke(menuOutlineColour);
+    strokeWeight(menuOutlineWidth);
+
+    //thinking bubbles
+    ellipse (x+110, y-110, 30, 30);
+    ellipse (x+137, y-130, 20, 20);
+    ellipse (x+160, y-140, 15, 15);
+    //menu bubbles
+    rect(x+180, y-160, 207, 90, 20); //of course!
+    rect(x+180, y-60, 207, 40, 20); //thank
+
+    //text
+    fill(textColour);
+    stroke(textColour)
+    strokeWeight (0.75)
+    textSize (20);
+    text (encouragement, x+195, y-150, 200);
+    text ('-Thank you-', x+230, y-50, 200);
+}
+function drawFoodSuggestionMenu(x,y){
+    fill(menuFillColour);
+    stroke(menuOutlineColour);
+    strokeWeight(menuOutlineWidth);
+
+    //thinking bubbles
+    ellipse (x+110, y-110, 30, 30);
+    ellipse (x+137, y-130, 20, 20);
+    ellipse (x+160, y-140, 15, 15);
+    //menu bubbles
+    rect(x+180, y-160, 207, 90, 20); //of course!
+    rect(x+180, y-60, 207, 40, 20); //no
+    rect(x+180, y-10, 207, 40, 20); //thank
+
+    //text
+    fill(textColour);
+    stroke(textColour)
+    strokeWeight (0.75)
+    textSize (20);
+    text (recipe, x+195, y-150, 200);
+    recipeLinkElement.attribute('href', recipeLink);
+    recipeLinkElement.position(x+195, y-105);
+    text ('-What else is there?-', x+200, y-48, 200);
+    text ('-Thank you-', x+230, y+2, 200);
+}
+
+function pickEncouragement (){
+    encouragement = random(encouragementList);
+}
+
+async function pickRecipe() { 
+  let response = await fetch('https://www.themealdb.com/api/json/v1/1/random.php');
+  let data = await response.json();
+  let meal = data.meals[0];
+  recipe = meal.strMeal;
+  recipeLink = meal.strYoutube;
+}
 
 function pickSuggestion(){
-    // console.log('available suggestions:', availableSuggestions.length);
-    // console.log('allSuggestionsUsed:', allSuggestionsUsed);
     if (calm === true) {
         if (availableSuggestions.length === 0 && suggestionsFilledOnce === false) {
             availableSuggestions = [...calmSuggestions];
@@ -1364,7 +1677,7 @@ function pickSuggestion(){
     }
     else if (sad === true) {
         if (availableSuggestions.length === 0 && suggestionsFilledOnce === false) {
-            availableSuggestions = [...sadySuggestions];
+            availableSuggestions = [...sadSuggestions];
             suggestionsFilledOnce = true;
         }
     }
@@ -1414,8 +1727,6 @@ function pickSuggestion(){
     let index = floor(random(availableSuggestions.length));
     suggestion = availableSuggestions[index];
     availableSuggestions.splice(index, 1);
-    console.log('picked:', suggestion); // ← add here
-    console.log('remaining:', availableSuggestions); // ← and here
 }
 
 function drawHungerMeter (x, y){ //x&y are hungerPos
@@ -1440,54 +1751,153 @@ function drawHungerMeter (x, y){ //x&y are hungerPos
     textSize (20);
     text ('hunger: ' + hunger, x, y);
 }
+function drawHungerAlert (x,y){
+    fill(menuFillColour);
+    stroke(menuOutlineColour);
+    strokeWeight(menuOutlineWidth);
+
+    //thinking bubbles
+    ellipse (x+110, y-110, 30, 30);
+    ellipse (x+137, y-130, 20, 20);
+    ellipse (x+160, y-140, 15, 15);
+    //menu bubbles
+    rect(x+180, y-160, 220, 70, 20); //hungry
+
+    //text
+    push ();
+    fill(textColour);
+    stroke(textColour);
+    strokeWeight (0.75);
+    textSize (hungerTextSize);
+    text (hungerAlert, x+192, y-148, 200);
+    pop ();
+}
+
+function drawWantMeter (x, y){ //x&y are hungerPos
+
+    //fill
+    if (want >= 0){
+    push ();
+    fill(hungerFillColour);
+    noStroke();
+    rect(x, y+20, want*2, 20); //thank you
+    pop ();
+    }
+    //outline
+    push ();
+    noFill();
+    stroke(hungerOutlineColour);
+    strokeWeight(hungerOutlineWidth);
+    rect(x, y+20, 200, 20); //thank you
+    pop ();
+
+    fill(textColour);
+    stroke(textColour);
+    strokeWeight (0.75);
+    textSize (20);
+    text ('want: ' + want, x, y);
+}
+function drawWantAlert (x,y){
+    fill(menuFillColour);
+    stroke(menuOutlineColour);
+    strokeWeight(menuOutlineWidth);
+
+    //thinking bubbles
+    ellipse (x+110, y-110, 30, 30);
+    ellipse (x+137, y-130, 20, 20);
+    ellipse (x+160, y-140, 15, 15);
+    //menu bubbles
+    rect(x+180, y-160, 220, 70, 20);
+
+    //text
+    push ();
+    fill(textColour);
+    stroke(textColour);
+    strokeWeight (0.75);
+    textSize (wantTextSize);
+    text (wantAlert, x+192, y-148, 200);
+    pop ();
+}
 
 //AI coded
-async function checkTime() {
-  let ipResponse = await fetch('https://api.ipify.org?format=json');
-  let ipData = await ipResponse.json();
-  let ip = ipData.ip;
- 
-  let timeResponse = await fetch('https://timeapi.io/api/time/current/ip?ipAddress=' + ip);
-  let timeData = await timeResponse.json();
-  
-  let hour = timeData.hour;
-  let minute = timeData.minute;
+    async function checkTime() {
+    let ipResponse = await fetch('https://api.ipify.org?format=json');
+    let ipData = await ipResponse.json();
+    let ip = ipData.ip;
+    
+    let timeResponse = await fetch('https://timeapi.io/api/time/current/ip?ipAddress=' + ip);
+    let timeData = await timeResponse.json();
+    
+    let hour = timeData.hour;
+    let minute = timeData.minute;
 
-  //hunger = getHungerTimerValue(hour, minute);
-  saveState();
-}
-
-function getHungerTimerValue(hour, minute) {
-  let currentMinutes = hour * 60 + minute;
-  
-  let meals = [
-    { start: breakfastStart * 60, end: (breakfastStart + 2) * 60 },
-    { start: lunchStart * 60, end: (lunchStart + 2) * 60 },
-    { start: dinnerStart * 60, end: (dinnerStart + 2) * 60 },
-  ];
-
-  for (let meal of meals) {
-    if (currentMinutes >= meal.start && currentMinutes < meal.end) {
-      if (hungerReset) return 0; // stay at 0 if reset during this meal window
-      let elapsed = currentMinutes - meal.start;
-      let total = meal.end - meal.start;
-      return parseFloat(((elapsed / total) * 100).toFixed(1));
+    hunger = getHungerTimerValue(hour, minute);
+    console.log (hunger)
+    saveState();
     }
-}
 
-  // outside all meal windows, clear the reset for next meal
-  hungerReset = false;
-  if (hunger >= 100) return 100;
-  return hunger;
-}
+    function getHungerTimerValue(hour, minute) {
+    let currentMinutes = hour * 60 + minute;
+    
+    let meals = [
+        { start: breakfastStart * 60, end: (breakfastStart + 2) * 60 },
+        { start: lunchStart * 60, end: (lunchStart + 2) * 60 },
+        { start: dinnerStart * 60, end: (dinnerStart + 2) * 60 },
+    ];
 
-function resetHunger() {
-  hunger = 0;
-  hungerReset = true;
-  showHungerAlertTimer = millis();
-  saveState();
-}
+    for (let meal of meals) {
+        if (currentMinutes >= meal.start && currentMinutes < meal.end) {
+        if (hungerReset) return 0; // stay at 0 if reset during this meal window
+        let elapsed = currentMinutes - meal.start;
+        let total = meal.end - meal.start;
+        return parseFloat(((elapsed / total) * 100).toFixed(1));
+        }
+    }
 
+    // outside all meal windows, clear the reset for next meal
+    hungerReset = false;
+    if (hunger >= 100) return 100;
+    return hunger;
+    }
+
+    function resetHunger() {
+    hunger = 0;
+    hungerReset = true;
+    showHungerAlertTimer = millis();
+    saveState();
+    }
+//AI made
+    function getWantValue() {
+        if (wantStartTime === null) return 0;
+        let elapsed = Date.now() - wantStartTime;
+        let value = (elapsed / (WANT_DURATION / wantSpeedMultiplier)) * WANT_LIMIT;
+        return parseFloat(Math.min(value, WANT_LIMIT).toFixed(1));
+    }
+    function lowerWant(amount) {
+        want = want - amount; // can now go below 0
+        wantStartTime = Date.now() - ((want / WANT_LIMIT) * WANT_DURATION);
+        saveState();
+    }
+    function increaseWant(amount) {
+        want = Math.min(WANT_LIMIT, want + amount); // never goes above 100
+        wantStartTime = Date.now() - ((want / WANT_LIMIT) * WANT_DURATION); // recalculate start time
+        saveState();
+    }
+    function resetWant() {
+        want = 0;
+        wantStartTime = Date.now();
+        saveState();
+    }
+    function speedUpWant() {
+        wantStartTime = Date.now() - ((want / WANT_LIMIT) * (WANT_DURATION / wantSpeedMultiplier));
+        wantSpeedMultiplier = 1.5;
+        saveState();
+    }
+    function resetWantSpeed() {
+        wantStartTime = Date.now() - ((want / WANT_LIMIT) * (WANT_DURATION / wantSpeedMultiplier));
+        wantSpeedMultiplier = 1; // back to normal
+        saveState();
+    }
 
 // Resize the canvas if the window is resized
 function windowResized() {
