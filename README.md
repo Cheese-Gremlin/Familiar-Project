@@ -4,9 +4,65 @@
 AI used: Clause using Sonnet 4.6 <br/>
 font used: https://fonts.google.com/selection/embed <br/>
 
-For simplicity i will call the familiar a goober until it has been given a 'shape'/ name <br/>
+INSTRUCTIONS AND GOOBER ABILITIES:<br/>
+How to interact with goober: <br/>
+    -log feeling and receive suggestions based on how your feeling. when suggestion is declined 5 times, goober runs out of suggestions but you can ask to hear them again (keep in mind that every declined suggestion makes the want meter go up even after the initial 5) <br/>
+    -share food by typing in what you ate. This resets the hunger meter to 0 till the next meal <br/>
+    -ask for help <br/>
+        ⤷goober gives you a random encouragement <br/>
+        ⤷goober gives you suggestions on what to do depending on how your feeling <br/>
+        ⤷goober gives you a food suggestions and gives you a link to a youtube tutorial <br/>
 
-Response to the brief: <br/>
+Other mechanics: <br/>
+-Want meter:<br/>
+    ⤷increase:  <br/>
+        over timer by around 25 per hour or by 37.5 per hour when goober is more than 75% hungry <br/>
+        user declines suggestion = +3 <br/>
+    ⤷decrease:  <br/>
+        User logs feeling = -50 <br/>
+        User accepts suggestion = -30 (enough to cancel out 10 declined suggestions) <br/> 
+        User shares food = -50 (enough to cancel out most of the 'speed increase' when hunger is >75) <br/> 
+        User asks for encouragement = -15 <br/>
+        user asks for food help = -15 <br/>
+-Hunger meter: (this may be buggy)<br/>
+    ⤷increases: <br/>
+        goes up over time 50 per hour <br/>
+        only starts when 'meal time' is reached. 8am for breakfast, 1pm for lunch and 6pm for dinner <br/>
+-Reactions: <br/>
+    ⤷ Smiles when 'want' is decreased (triggered by 'showHappy') <br/>
+    ⤷ Pouts when 'want' is increased due to users interaction with goober (triggered by 'showSad') <br/>
+    ⤷ if hunger or want are higher than 95: sad expression and speed increased to maximum. Constantly shows applicable Alert <br/>
+    ⤷ if hunger or want are higher than 75 but lower than 95: speed is 3* normal and applicable Alert shows every 10 min <br/>
+    ⤷ if hunger or want are higher than 50 but lower than 75: speed is 2* normal and applicable Alert shows every 15 min <br/>
+    ⤷ if hunger or want are higher than 25 but lower than 50: speed is  normal and applicable Alert shows every 20 min <br/>
+    ⤷ if hunger or want are lower than 25 all is normal<br/>
+
+To test most things especially goobers reactions you can just interact with goober to change the value of 'want' and 'hunger' <br/>
+Things to change for testing goober: <br/>
+    ⤷all 'show--Menu' @ line 14-29 - toggles wether certain menues are shown when reloading. All need to be false when not testing <br/>
+    ⤷ showHungerAlert @ line 160 - toggles if the 'hunger alert' is drawn. usually is false <br/>
+    ⤷ all 'meal starts' @ line 166/168 - sets when the hunger meter starts (can be a little buggy) <br/>
+    ⤷ WANT_DURATION @ line 177 - make smaller to make 'want' increase faster. <br/>
+    ⤷ showWantAlert @ line 160 - toggles if the 'want alert' is drawn. usually is false <br/>
+    ⤷ increaseWantValue @ line 188 - increases the amount 'want' goes up by when a suggestion is declined. <br/>
+    ⤷ resetWant() @ line 278 - un-comment this to make 'want' return to 0 <br/>
+
+
+Things that where planned but arent in the 'final output' due to time/scope : <br/>
+    -goober makes noise when interacted with or as response to hunger/want meter increasing <br/>
+    -user can log what they enjoy doing and goober saves input and adds it to possible suggestions <br/>
+    -goober turns grey when no feeling is logged in over 6 hours <br/>
+    -goober logs what user ate to use as 'food suggestions' <br/>
+    -user can upload picture of what they ate when sharing food <br/>
+    -user shares they are proud of themselves
+    -user can choose 2 emotions
+    -proper goober animation: more 'floaty' movement and 'swoops' at bottom of goober 'ripple' <br/>
+    -proper/ nicer visual display of want meters <br/>
+    -nicer background <br/>
+
+-------------------------------------------------------------------------------------------
+
+Initial response to the brief: <br/>
 im very excited about this project. I think its a fun idea to create a little goober and designing it in a way that affects how the user feels/ interacts with the goober. Im also very excited about working in p5js again since I understand how it works (its where i learned my current coding skills so im comfy here) which means that I dont have to rely on and use AI too much throughout this project but can also do a lot myself. Yes using AI might make the process quicker but my goal is to learn how to code so im using this project as a learning opportunity and only using AI when i get stuck or take too much time on a task that it starts negatively affecting the timeline of my project. <br/>
 
 Notes and opinions: <br/>
@@ -34,6 +90,12 @@ Notes and opinions: <br/>
 29/04 <br/>
     -its quite 'nice' working with AI when it works without 'doing things wrong'. But I still feel like i am missing out on a lot of opportunities to learn and better my skills. Yes it does things faster working with AI but i am still very much under the impression that it is better to do it yourself because then you have more control and have more knowledge on how to fix problems and use similar systems in the future. Its a shame how many learning opportunities AI takes from us and I think it should only really be used once someone has learned how to properly code without relying on AI to help in order to make certain tasks 'quicker', instead of using Ai as a 'step skipper'. <br/>
     As fun as this project has been and as much as I have learnt, I really just wish that we would be taught how to code and thereby learn a much more valuable skill. <br/>
+30/04 <br/>
+    -final opinion: <br/>
+    I am so happy with the little goober i created. He is so cute and i can really envision him 'helping' people with things. <br/>
+    I had a lot of fun designing him and doing coding parts by myself or researching how to do certain things. <br/>
+    Using AI is still not a thing I enjoy doing since I dont think that I learn as much as I would if I instead did the coding and researching myself since that process would be more memorable. I do still definitely think that AI is a really cool thing and can be used for amazing things and alows us to do things we werent able to do before. However using it as a 'Learning tool' is not as effective as I had hoped and I still am a strong believer than doing it yourself and putting more effort into it is way more rewarding and better for learning. When disregarding wanting to learn to code then using AI is 'good'. <br/>
+    this is very directly said and more of an observation than criticism -> I think the 'main issue' i have with this course is that I want to use it to learn how to code but it seems that instead it is intended to 'make AI do all the coding' and instead focus on the 'design process'. I do think that this is very cool and a great opportunity but it just sadly isnt what i was after when signing up for this course. From what i know there isnt any other course in the design school that teaches coding so that is why i was really hoping this code would do that. Even though this course hasnt turned out how i expected it to it has still be a great way for me to learn to 'adapt the brief to what I want to learn' and to also further grow and develop my opinion and knowledge about AI
 
 
 idea 1: <br/>
@@ -46,8 +108,8 @@ idea 2: <br/>
 have a goober that responds to how the user is feeling and helps look after them <br/>
 ![alt text](Images-ReadMe/Idea-2.png) <br/>
 
-Goober communicates to user through 'translator device' on screen and makes a small noise every time they say something  <br/>
-------------------------------------------------------
+Initial idea was to have Goober communicates to user through 'translator device' on screen and makes a small noise every time they say something but instead it is displayed as 'goober thoughts' <br/>
+
 
 When user presses on goober, goober asks how they can help: <br/>
     - log a feeling <br/>
@@ -114,7 +176,7 @@ Goobers States: <br/>
     -Colour state: <br/>
         ⤷ changes depending on how user is feeling <br/>
         ⤷ goes dark grey when feelings arent logged in 6/8 hours  <br/>
-    -Curious state over 4 hours <br/>
+    -Curious state over 4 hours aka 'want meter' <br/>
         ⤷ not curious = all normal <br/>
         ⤷ 0.25 curious = makes noise every 20min <br/>
         ⤷ 0.5 curious = comes close to screen and makes noise every 20min <br/>
@@ -193,14 +255,13 @@ picking the suggestion:<br/>
 making all menus close when user presses outside goober<br/>
     - i used the same logic as for the buttons so that when the user clicks outside of the goober and menu area, all show-menus get turned false. I did this by defining the area that would be 'mouseOnGoober' and 'flipping' it using (!(mouseX > gooberPosX-115 && etc etc etc)) <br/>
 
--------------------------------------------------------------------------
 sharing food: <br/>
     - i want the user to be able to share a description of what they ate, maybe even a picture, to which the goober responds with something like 'ooo thats yummy! i hope you enjoyed it and that it gave you lots of fuel'. This will directly relate to the 'hunger meter'. <br/>
     -plan: I will start by making a button in the main menu, a base layout for the 'sharing food' menu, and a 'food response' menu. Since i dont know how to add a section where the user can type in text or insert images I will ask AI for help so little Claud bot has something to do. <br/>
     Working with the AI took some back and forth again as it didnt seem to fully understand what i was asking for. here is the output: <br/>
     ![alt text](<Images-ReadMe/AI created - input box.png>) <br/>
 
-Hunger Meter:
+Hunger Meter:<br/>
     -i asked claude for help with the code of how to make a value increase over time etc <br/>
     ![alt text](<Images-ReadMe/AI created - increasing value pt 1.png>) <br/>
     this did quite work since i needed to be able to start and stop the meter and for the value to be stored so that it would carry over when reloading the page <br/>
@@ -208,10 +269,10 @@ Hunger Meter:
     here is the 'final' thing that claude came up with after a lot of trouble shooting: <br/>
     ![alt text](<Images-ReadMe/AI created - increasing value pt 2.png>)<br/>
     -asking AI to help with triggering it at a certain time of day: <br/>
-    ![alt text](<Images-ReadMe/AI created - time of day.png>)
+    ![alt text](<Images-ReadMe/AI created - time of day.png>) <br/>
     ... just realized that this actually doesnt work when the page isnt open which isnt ideal... i would instead need to make something that checks how long it has been since e.g. breakfast time/ 8 am and then base the hunger meter off that. im hoping that i can use some of the code i already have.. <br/>
     lets aks claude: (took about an hour to trouble shoot) <br/>
-    ![alt text](<Images-ReadMe/AI created - hunger timer.png>)
+    ![alt text](<Images-ReadMe/AI created - hunger timer.png>) <br/>
     ⤷  it dont work...... Because the the 'check timer' which updates hunger ony gets run every 30 seconds, hunger doesnt alwasy reach 100 since the last 'checkTimer' that would update it to 100 would run a couple seconds after e.g. 10am, but since the function doesnt update anymore 2 hours after hunger starts, it doesnt run. <br/>
     -my current solution is to trigger riot mode at 95 instead of 100 because the 'timer' will alwasy make it that far. I would prefer to have a more accurate solution becasue like this I also cant display the number value of hunger since it will never hit 100, but i dont currently have time for it (i will revisit this issue if time alows for it) <br/>
 
@@ -223,14 +284,14 @@ making goober move: <br/>
     -if i have more time i want to add slight up and down movement as well to make goober seem more floaty but this works for now <br/>
 
 making the text flip when goober is a certain distance across the screen. <br/>
-    -theoretically this should be easily done by just flipping x to be negative instead of positve for the text but this is not high enough of a priority so i will do this at the end if i have enough time. 
+    -theoretically this should be easily done by just flipping x to be negative instead of positve for the text but this is not high enough of a priority so i will do this at the end if i have enough time. <br/>
 
 
-different states: 
+different states: <br/>
     -i used if statements to check the value of hunger to trigger different states and alerts <br/>
     ![alt text](<Images-ReadMe/AI created - hunger timer.png>)
     -alerts before goober is 100% hungry get triggered after a certain amount of time and stay visible for a certain amount of time. this is all done using timers and checking how much time has passed since they where started. <br/>
-    -i used the same 'timer' mechanic as for 'thinking' to make goober be happy when the user interacts with them positively (e.g. log feeling, share food, accept suggestion) and sad when the user declines a suggestion. 
+    -i used the same 'timer' mechanic as for 'thinking' to make goober be happy when the user interacts with them positively (e.g. log feeling, share food, accept suggestion) and sad when the user declines a suggestion. <br/>
 
 
 help menu: <br/>
@@ -248,7 +309,7 @@ help menu: <br/>
     -the want meter works similarly to the 'hunger meter' in that it increases over time. However it doesnt start at set times during the day but rather 'continuously' increases. <br/>
     -I want the timer to increase by 0.415 every minuit or 25 per hour so that 100% is hit after 4 hours. <br/>
     -Idealy I would like to use some of the code from the 'hunger meter' to make my own version for the 'want meter' to test my skills and what i have learnt so far. Instead I will ask AI for help since I sadly dont have enough time to do it myself. <br/>
-    ![alt text](<Images-ReadMe/AI created - want meter.png>)
+    ![alt text](<Images-ReadMe/AI created - want meter.png>)<br/>
 
 changing the want meter value when user interacts: <br/>
     -When hunger is higher than 75 i want to increase the speed that the want meter goes up by: <br/>
@@ -259,8 +320,8 @@ changing the want meter value when user interacts: <br/>
     ⤷decrease:  <br/>
         feeling logged -50 <br/>
         suggestion accepted -30 (enough to cancel out 10 declined suggestions) <br/> 
-        shared food -50 <br/> (enough to cancel out most of the 'speed increase' when hunger is >75)
+        shared food -50 (enough to cancel out most of the 'speed increase' when hunger is >75) <br/> 
         asked for encouragement -15 <br/>
         asked for food help -15 <br/>
     - originally i thought it best for the want value to not be able to go bellow 0 but then realized that it would 'screw over' the user if they did multiple things at once. E.g.: the user logs their feelings and accepts a suggestion which would add to 80, however if the want meter is only 60 then 20 of the users 'earned decrease points' are wasted which may encourage them to wait longer to do certain things like eat and ask for help which is the very opposite of what the goobers purpose is. <br/>
-    ![alt text](<Images-ReadMe/AI created - want below 0.png>)
+    ![alt text](<Images-ReadMe/AI created - want below 0.png>) <br/>

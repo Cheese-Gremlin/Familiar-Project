@@ -185,6 +185,7 @@ let wantAlert = ('Goober wishes you were here')
 let wantTextSize = (23);
     let showWantAlertTimer = 0;
     let closeWantAlertTimer = Infinity;
+let increaseWantValue = (+3); //usually +3 <----Makes this higher to make 'want' jump up when declining suggestion. Only for when testing things
 
 //goober stuff
 let gooberOutlineColour = [0, 0, 100];
@@ -204,7 +205,7 @@ let moveRight = true;
 let moveLeft = false;
 
 // goober expressions
-let contemptFace = true;
+let contemptFace = true; //usually is true
 let happyFace = false;
 let sadFace = false;
 let angryFace = false;
@@ -336,8 +337,9 @@ function saveState() {
 }
 
 function draw() {
+    //console.log (gooberSpeed);
+    
     background (245, 35, 67);
-
     drawGooberState (gooberPosX, gooberPosY);
     drawGoober(gooberPosX, gooberPosY);
 
@@ -651,13 +653,13 @@ function drawGooberState (x, y){
         angryFace = false;
     }
     else if ((hunger > 50 && hunger < 75) || (want > 50 && want < 75)) {
-        gooberSpeed = 2;
+        gooberSpeed = (2);
         contemptFace = true; //contempt
         happyFace = false;
         sadFace = false;
         angryFace = false;
     }
-    else if (hunger <= 25 || want <= 25 ){
+    else if (hunger <= 50 || want <= 50 ){
         gooberSpeed = (1);
         contemptFace = true; //contempt
         happyFace = false;
@@ -674,7 +676,7 @@ function drawGooberState (x, y){
 
 function setHungerAlert () {
     //always
-    if (hunger >= 95 && showHungerAlert === false) {
+    if (hunger >= 95) {
         showHungerAlert = true;
         hungerAlert = ('IM HUNGRY!')
         hungerTextSize = (41);
@@ -700,6 +702,9 @@ function setHungerAlert () {
         hungerAlert = ('Hmmmm Im starting to get hungry')
         hungerTextSize = (23);
     }
+    else if (want < 25 ) {
+        showHungerAlert = false;
+    }
 
     //hides hunger alert after 
     if (showHungerAlert === true && millis() - closeHungerAlertTimer > 5000) {
@@ -709,10 +714,10 @@ function setHungerAlert () {
 }
 function setWantAlert () {
     //always
-    if (want >= 95 && showWantAlert === false) {
+    if (want >= 95) {
         showWantAlert = true;
-        wantAlert = ('Goober feels Abandoned')
-        wantTextSize = (41);
+        wantAlert = ('Goober feels Abandoned') //
+        wantTextSize = (27);
     }
     //every 10 min
     else if (want >= 75 && want < 95 && showWantAlert === false && millis() - showWantAlertTimer > 600000) {
@@ -734,6 +739,9 @@ function setWantAlert () {
         closeWantAlertTimer = millis();
         wantAlert = ('Goober is thinking about you')
         wantTextSize = (23);
+    }
+    else if (want < 25 ) {
+        showWantAlert = false;
     }
 
     //hides want alert after 
@@ -834,7 +842,7 @@ function mouseClicked () {
         pickSuggestion();
         showSad = true;
         restartSadTime = millis()
-        increaseWant (3);
+        increaseWant (increaseWantValue);
     }
 // press 'i would like more help' in accepted suggestion menu
     else if (showMainMenu === false && showFeelingsMenu === false && showSuggestionMenu === false && showAcceptedSuggestionMenu === true && showDeclinedSuggestionMenu === false && mouseX > gooberPosX+180 && mouseX < gooberPosX+407 && mouseY > gooberPosY-45 && mouseY < gooberPosY-15) {
@@ -873,7 +881,7 @@ function mouseClicked () {
         pickSuggestion();
         showSad = true;
         restartSadTime = millis()
-        increaseWant (3);
+        increaseWant (increaseWantValue);
     }
 // press 'no thanks' in declined suggestion menu and out of suggestions
     else if (allSuggestionsUsed === true && showOutOfSuggestionMenu === false && showMainMenu === false && showFeelingsMenu === false && showSuggestionMenu === false && showAcceptedSuggestionMenu === false && showDeclinedSuggestionMenu === true && showThinking === false && mouseX > gooberPosX+180 && mouseX < gooberPosX+407 && mouseY > gooberPosY-5 && mouseY < gooberPosY+25) {
@@ -887,7 +895,7 @@ function mouseClicked () {
         suggestionsFilledOnce = false;
         showSad = true;
         restartSadTime = millis()
-        increaseWant (3);
+        increaseWant (increaseWantValue);
     }
 // press 'can i hear again' in OutOfSuggestionMenu
     else if (showOutOfSuggestionMenu === true && showThinking === false && mouseX > gooberPosX+180 && mouseX < gooberPosX+407 && mouseY > gooberPosY-17 && mouseY < gooberPosY+13) {
@@ -1714,7 +1722,7 @@ function pickSuggestion(){
 
 
 
-// dont really understand what this does... AI made it
+// AI made: I dont fully understand how this works but i know what it does
     if (availableSuggestions.length === 1) {
         let index = floor(random(availableSuggestions.length));
         suggestion = availableSuggestions[index];
